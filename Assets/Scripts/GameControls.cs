@@ -9,16 +9,44 @@ public class GameControls : MonoBehaviour {
     public LidMovement Lid;
     public PartMan Parts;
 
+    private int frameCt;
+
+    public ParticleSystem Smoke;
+    /// <summary>
+    /// Amount that's deleted every evaporation frame.
+    /// </summary>
+    private int evapoMount;
+    /// <summary>
+    /// Speed at which the lid top decreases.
+    /// </summary>
+    public float evapoVolSpeed;
+
 	// Use this for initialization
 	void Start () {
         Lid.SetFillState(LidMovement.FillStates.Empty);
         Parts.ClearParts();
-	}
+        evapoMount = (int)(evapoVolSpeed / Lid.MovIncrement) + 1;
+    }
 	
 	// Update is called once per frame
 	void Update () {
-            
-	}
+
+        frameCt++;
+
+        if (Parts.IsBoiling && !Smoke.isPlaying) {
+            Smoke.Play();
+        }else if (!Parts.IsBoiling && Smoke.isPlaying) {
+            Smoke.Stop();
+        }
+        if (Parts.IsBoiling) {
+            if (frameCt % Parts.EvapoRate == 0) {
+                //Incremental parts deletion
+                Parts.DeleteParts(evapoMount);
+                //Incremental volume lowering
+                Lid.SmoothEmpty(evapoVolSpeed);
+            }
+        }
+    }
 
     /// <summary>
     /// Iterates through state towards target fill state.
@@ -58,17 +86,17 @@ public class GameControls : MonoBehaviour {
     {
         if (Lid.CurrFill == LidMovement.FillStates.Empty)
             return;
-        Parts.DeleteParts();
-        Lid.EmptySome();
+        Parts.DeleteParts(0);
+        Lid.EmptySome( );
     }
 
     public void IncreaseHeat()
     {
-        Parts.IncreaseSpeed();
+        Parts.IncreaseRate();
     }
 
     public void DecreaseHeat()
     {
-        Parts.DecreaseSpeed();
+        Parts.DecreaseRate();
     }
 }

@@ -5,34 +5,71 @@ using System.Collections.Generic;
 /// All particle system controls for Brewing For Science game.
 /// </summary>
 [RequireComponent(typeof(ParticleSystem))]
-public class PartMan : MonoBehaviour {
+public class PartMan : MonoBehaviour
+{
 
     public LidMovement Lid;
 
+    #region Controls behavior
     public int PartsPerState;
     public int StartSpeed;
     public float SpeedScale;
-    public int MaxSpeed;
-    public int MinSpeed;
+    public float BoilPoint;
+    public float EvapoRate;
+    public float DeltaHeatUpRate;
+    public float MaxHeatUpRate;
+    public float MinHeatUpRate;
+    #endregion
 
+    #region Per-particle management
     public ParticleSystem PartSys;
     private int partArrayLen;
-    private ParticleSystem.Particle[][] partArrays;
-    public float CurrSpeed;
+    private ParticleSystem.Particle[] partArray;
+    private bool isBoiling;
+    private float heatUpRate;
+    private float startingHeatUpRate;
+    #endregion
 
-
+    #region Test VARS
+    private float frameCt;
+    private float avgSpd = 0f;
+    private float totalSpd = 0f;
+    private float totalSamples = 0f;
+    #endregion
+    
     // Use this for initialization
-    void Start () {
+    void Start()
+    {
         PartSys = GetComponent<ParticleSystem>();
-        partArrays = new ParticleSystem.Particle[PartSys.maxParticles][];
+        partArray = new ParticleSystem.Particle[PartSys.maxParticles];
         PartSys.startSpeed = StartSpeed;
-        CurrSpeed = StartSpeed;
+        startingHeatUpRate = MaxHeatUpRate;
+        heatUpRate = startingHeatUpRate;
+
     }
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+
+    // Update is called once per frame
+    void Update()
+    {
+        frameCt++;
+
+        if(frameCt % heatUpRate == 0 && heatUpRate != MaxHeatUpRate) {
+            IncreaseSpeed();
+            //boilrate is modified by the + and minus and also the volume
+            //but temp always increases naturally
+        }
+
+        //if (frameCt % 3 == 0) {
+        //    partArray = new ParticleSystem.Particle[PartSys.maxParticles];
+        //    partArrayLen = PartSys.GetParticles(partArray);
+        //    if (partArrayLen <= 0)
+        //        return;
+        //    totalSpd += partArray[Random.Range(0, partArrayLen)].velocity.magnitude;
+        //    totalSamples++;
+        //    avgSpd = totalSpd / totalSamples;
+        //    CBUG.Do("Spd AVG: " + avgSpd);
+        //}
+    }
 
     /// <summary>
     /// Delete all particles from the system.
@@ -46,9 +83,10 @@ public class PartMan : MonoBehaviour {
     /// <summary>
     /// Delete PartsToDelete particles from the system.
     /// </summary>
-    public void DeleteParts()
+    public void DeleteParts(int amt)
     {
-        deleteMultiple(PartsPerState);   
+        int tempAmt = amt <= 0 ? PartsPerState : amt;
+        deleteMultiple(tempAmt);
     }
 
     /// <summary>
@@ -57,59 +95,96 @@ public class PartMan : MonoBehaviour {
     /// <param name="count">Amount of particles to delete.</param>
     private void deleteMultiple(int count)
     {
-        partArrays = new ParticleSystem.Particle[PartSys.maxParticles];
-        partArrayLen = PartSys.GetParticles(partArrays);
+        partArray = new ParticleSystem.Particle[PartSys.maxParticles];
+        partArrayLen = PartSys.GetParticles(partArray);
         //Edge Case: get told to delete more than exists.
         count = partArrayLen < count ? partArrayLen : count;
-        for(int x = 0; x < count; x++) {
+        for (int x = 0; x < count; x++) {
             //Yes, the same particle may be marked for deletion multiple times.
             //Unless I find a simple way to guarantee different random integers, this will suffice.
-            partArrays[Random.Range(0, partArrayLen)].lifetime = 0;
-            PartSys.maxParticles--; 
+            partArray[Random.Range(0, partArrayLen)].lifetime = 0;
+            PartSys.maxParticles--;
         }
-        PartSys.SetParticles(partArrays, partArrayLen);
-        if(PartSys.maxParticles <= 0) {
+        PartSys.SetParticles(partArray, partArrayLen);
+        if (PartSys.maxParticles <= 0) {
             PartSys.Clear();
         }
     }
 
     public void AddParts()
     {
-        PartSys.maxParticles += PartsPerState;
-        PartSys.Emit(PartsPerState);
+        int tempAmt = PartSys.maxParticles - (PartSys.maxParticles / PartsPerState) * PartsPerState;
+        tempAmt = PartsPerState - tempAmt;
+        PartSys.maxParticles += tempAmt;
+        PartSys.Emit(tempAmt);
     }
 
     public void IncreaseSpeed()
     {
-        if (CurrSpeed + SpeedScale > MaxSpeed)
-            return;
+        //if (CurrSpeed + SpeedScale > MaxSpeed)
+        //    return;
 
-        partArrays = new ParticleSystem.Particle[PartSys.maxParticles];
-        partArrayLen = PartSys.GetParticles(partArrays);
-        CurrSpeed += SpeedScale;
+        partArray = new ParticleSystem.Particle[PartSys.maxParticles];
+        partArrayLen = PartSys.GetParticles(partArray);
+        isBoiling = PartSys.maxParticles != 0;
         for (int x = 0; x < partArrayLen; x++) {
-            //Yes, the same particle may be marked for deletion multiple times.
-            //Unless I find a simple way to guarantee different random integers, this will suffice.
-            Vector3 temp = partArrays[x].velocity.normalized;
-            partArrays[x].velocity = new Vector3(temp.x *CurrSpeed, temp.y * CurrSpeed, -1f);
+            if (partArray[x].velocity.sqrMagnitude < BoilPoint) {
+                isBoiling = false;
+            }
+            partArray[x].velocity = new Vector3(
+                partArray[x].velocity.x * SpeedScale,
+                partArray[x].velocity.y * SpeedScale,
+                0f
+            );
         }
-        PartSys.SetParticles(partArrays, partArrayLen);
+        for (int x = 0; x < partArrayLen; x++) {
+            if (isBoiling)
+                partArray[x].lifetime = partArray[x].startLifetime / 2;
+            else {
+                partArray[x].lifetime = partArray[x].startLifetime;
+            }
+            //Lifetime used here to change sprite in particle.
+        }
+        PartSys.SetParticles(partArray, partArrayLen);
+    }
+
+    public void IncreaseRate()
+    {
+        if (heatUpRate - DeltaHeatUpRate < MinHeatUpRate)
+            return;
+        heatUpRate -= DeltaHeatUpRate; 
+    }
+
+    public void DecreaseRate()
+    {
+        if (heatUpRate + DeltaHeatUpRate > MaxHeatUpRate)
+            return;
+        heatUpRate += DeltaHeatUpRate;
     }
 
     public void DecreaseSpeed()
     {
-        if (CurrSpeed - SpeedScale < MinSpeed)
-            return;
-
-        partArrays = new ParticleSystem.Particle[PartSys.maxParticles];
-        partArrayLen = PartSys.GetParticles(partArrays);
-        CurrSpeed -= SpeedScale;
+        partArray = new ParticleSystem.Particle[PartSys.maxParticles];
+        partArrayLen = PartSys.GetParticles(partArray);
         for (int x = 0; x < partArrayLen; x++) {
-            //Yes, the same particle may be marked for deletion multiple times.
-            //Unless I find a simple way to guarantee different random integers, this will suffice.
-            Vector3 temp = partArrays[x].velocity.normalized;
-            partArrays[x].velocity = new Vector3(temp.x * CurrSpeed, temp.y * CurrSpeed, -1f);
+            partArray[x].velocity = new Vector3(
+                partArray[x].velocity.x / SpeedScale,
+                partArray[x].velocity.y / SpeedScale,
+                0f
+            );
         }
-        PartSys.SetParticles(partArrays, partArrayLen);
+        PartSys.SetParticles(partArray, partArrayLen);
+    }
+
+    public bool IsBoiling {
+        get {
+            return isBoiling;
+        }
+    }
+
+    public float HeatUpRate {
+        get {
+            return heatUpRate;
+        }
     }
 }

@@ -9,6 +9,8 @@ public class LidMovement : MonoBehaviour {
 
     private float currY;
 
+    public PartMan Parts;
+
     public enum FillStates
     {
         Empty,
@@ -49,16 +51,26 @@ public class LidMovement : MonoBehaviour {
         //    0f));
     }
 
-    public void EmptySome()
+    /// <summary>
+    /// Returns True if cup is completely empty.
+    /// </summary>
+    public bool EmptySome()
     {
-        if (transform.localPosition.y - 1f < YMin)
-            return;
+        if (transform.localPosition.y <= YMin)
+            return true;
         CurrFill--;
+
         transform.localPosition = new Vector3(
                     transform.localPosition.x,
                     YMin + ((float)CurrFill * MovIncrement),
                     transform.localPosition.z
         );
+        if (transform.localPosition.y <= YMin) {
+            Parts.ClearParts();
+            return true;
+        }
+
+        return false;
         //transform.Translate(new Vector3(
         //    0f,
         //    -movIncrement,
@@ -82,7 +94,7 @@ public class LidMovement : MonoBehaviour {
         CurrFill = NewFill;
         transform.localPosition = new Vector3(
                     transform.localPosition.x,
-                    YMin + ((float)CurrFill),
+                    YMin + ((float)CurrFill * MovIncrement),
                     transform.localPosition.z
         );
 
@@ -107,10 +119,17 @@ public class LidMovement : MonoBehaviour {
         //}
     }
 
-    public void SmoothEmpty(float amt)
+    /// <summary>
+    /// Returns true of completely empty.
+    /// </summary>
+    /// <param name="amt"></param>
+    /// <returns></returns>
+    public bool SmoothEmpty(float amt)
     {
-        if (transform.localPosition.y - amt < YMin)
-            return;
+        if (transform.localPosition.y - amt <= YMin) {
+            Parts.ClearParts();
+            return true;
+        }
         if (transform.localPosition.y - amt < YMin + ((float)CurrFill * MovIncrement)) {
             CurrFill--;
             CBUG.Do("CUYRR MINUS IN SMOOTH");
@@ -120,6 +139,11 @@ public class LidMovement : MonoBehaviour {
             0f,
             -amt,
             0f));
+        if (transform.localPosition.y - amt <= YMin) {
+            Parts.ClearParts();
+            return true;
+        }
+        return false;
     }
 
 }

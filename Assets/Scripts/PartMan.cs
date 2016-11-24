@@ -28,6 +28,7 @@ public class PartMan : MonoBehaviour
     private bool isBoiling;
     private float heatUpRate;
     private float startingHeatUpRate;
+    public float HeatUpRateMod;
     #endregion
 
     #region Test VARS
@@ -53,10 +54,8 @@ public class PartMan : MonoBehaviour
     {
         frameCt++;
 
-        if(frameCt % heatUpRate == 0 && heatUpRate != MaxHeatUpRate) {
+        if(frameCt % (heatUpRate + HeatUpRateMod) == 0 && heatUpRate != MaxHeatUpRate) {
             IncreaseSpeed();
-            //boilrate is modified by the + and minus and also the volume
-            //but temp always increases naturally
         }
 
         //if (frameCt % 3 == 0) {

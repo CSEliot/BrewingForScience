@@ -15,17 +15,17 @@ public class GameControls : MonoBehaviour {
     /// <summary>
     /// Amount that's deleted every evaporation frame.
     /// </summary>
-    private int evapoMount;
+    public int EvapoMount;
     /// <summary>
     /// Speed at which the lid top decreases.
     /// </summary>
-    public float evapoVolSpeed;
+    public float EvapoVolSpeed;
 
 	// Use this for initialization
 	void Start () {
         Lid.SetFillState(LidMovement.FillStates.Empty);
         Parts.ClearParts();
-        evapoMount = (int)(evapoVolSpeed / Lid.MovIncrement) + 1;
+        //EvapoMount = (int)(/*evapoVolSpeed / Lid.MovIncrement) + 1*/;
     }
 	
 	// Update is called once per frame
@@ -41,9 +41,9 @@ public class GameControls : MonoBehaviour {
         if (Parts.IsBoiling) {
             if (frameCt % Parts.EvapoRate == 0) {
                 //Incremental parts deletion
-                Parts.DeleteParts(evapoMount);
+                Parts.DeleteParts(EvapoMount);
                 //Incremental volume lowering
-                Lid.SmoothEmpty(evapoVolSpeed);
+                Lid.SmoothEmpty(EvapoVolSpeed);
             }
         }
     }
@@ -79,6 +79,7 @@ public class GameControls : MonoBehaviour {
         if (Lid.CurrFill == LidMovement.FillStates.Large)
             return;
         Parts.AddParts();
+        Parts.HeatUpRateMod += 10;
         Lid.FillSome();
     }
 
@@ -87,6 +88,7 @@ public class GameControls : MonoBehaviour {
         if (Lid.CurrFill == LidMovement.FillStates.Empty)
             return;
         Parts.DeleteParts(0);
+        Parts.HeatUpRateMod -= 10;
         Lid.EmptySome( );
     }
 

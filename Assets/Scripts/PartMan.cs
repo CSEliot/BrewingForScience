@@ -19,16 +19,16 @@ public class PartMan : MonoBehaviour
     public float DeltaHeatUpRate;
     public float MaxHeatUpRate;
     public float MinHeatUpRate;
+    public bool IsBoiling;
+    public float HeatUpRateMod;
     #endregion
 
     #region Per-particle management
     public ParticleSystem PartSys;
     private int partArrayLen;
     private ParticleSystem.Particle[] partArray;
-    private bool isBoiling;
     private float heatUpRate;
     private float startingHeatUpRate;
-    public float HeatUpRateMod;
     #endregion
 
     #region Test VARS
@@ -125,10 +125,10 @@ public class PartMan : MonoBehaviour
 
         partArray = new ParticleSystem.Particle[PartSys.maxParticles];
         partArrayLen = PartSys.GetParticles(partArray);
-        isBoiling = PartSys.maxParticles != 0;
+        IsBoiling = PartSys.maxParticles != 0;
         for (int x = 0; x < partArrayLen; x++) {
             if (partArray[x].velocity.sqrMagnitude < BoilPoint) {
-                isBoiling = false;
+                IsBoiling = false;
             }
             partArray[x].velocity = new Vector3(
                 partArray[x].velocity.x * SpeedScale,
@@ -137,7 +137,7 @@ public class PartMan : MonoBehaviour
             );
         }
         for (int x = 0; x < partArrayLen; x++) {
-            if (isBoiling)
+            if (IsBoiling)
                 partArray[x].lifetime = partArray[x].startLifetime / 2;
             else {
                 partArray[x].lifetime = partArray[x].startLifetime;
@@ -173,12 +173,6 @@ public class PartMan : MonoBehaviour
             );
         }
         PartSys.SetParticles(partArray, partArrayLen);
-    }
-
-    public bool IsBoiling {
-        get {
-            return isBoiling;
-        }
     }
 
     public float HeatUpRate {

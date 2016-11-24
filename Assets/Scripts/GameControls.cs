@@ -20,6 +20,10 @@ public class GameControls : MonoBehaviour {
     /// Speed at which the lid top decreases.
     /// </summary>
     public float EvapoVolSpeed;
+    /// <summary>
+    /// More liquid in the cup means it takes longer to heat up.
+    /// </summary>
+    public float HeatUpVolMod;
 
 	// Use this for initialization
 	void Start () {
@@ -43,7 +47,9 @@ public class GameControls : MonoBehaviour {
                 //Incremental parts deletion
                 Parts.DeleteParts(EvapoMount);
                 //Incremental volume lowering
-                Lid.SmoothEmpty(EvapoVolSpeed);
+                if (Lid.SmoothEmpty(EvapoVolSpeed)) {
+                    Parts.IsBoiling = false;
+                }
             }
         }
     }
@@ -79,7 +85,7 @@ public class GameControls : MonoBehaviour {
         if (Lid.CurrFill == LidMovement.FillStates.Large)
             return;
         Parts.AddParts();
-        Parts.HeatUpRateMod += 10;
+        Parts.HeatUpRateMod += HeatUpVolMod;
         Lid.FillSome();
     }
 
@@ -88,8 +94,10 @@ public class GameControls : MonoBehaviour {
         if (Lid.CurrFill == LidMovement.FillStates.Empty)
             return;
         Parts.DeleteParts(0);
-        Parts.HeatUpRateMod -= 10;
-        Lid.EmptySome( );
+        Parts.HeatUpRateMod -= HeatUpVolMod;
+        if(Lid.EmptySome()){
+            Parts.IsBoiling = false;
+        }
     }
 
     public void IncreaseHeat()

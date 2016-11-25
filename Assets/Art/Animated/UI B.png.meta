@@ -1,9 +1,24 @@
 fileFormatVersion: 2
 guid: 08172c704e193244587833af4cef5203
-timeCreated: 1479943671
+timeCreated: 1480089146
 licenseType: Free
 TextureImporter:
-  fileIDToRecycleName: {}
+  fileIDToRecycleName:
+    21300000: UI B_0
+    21300002: UI B_1
+    21300004: UI B_2
+    21300006: UI B_3
+    21300008: UI B_4
+    21300010: UI B_5
+    21300012: UI B_6
+    21300014: UI B_7
+    21300016: UI B_8
+    21300018: UI B_9
+    21300020: UI B_10
+    21300022: UI B_11
+    21300024: UI B_12
+    21300026: UI B_13
+    21300028: UI B_14
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -30,7 +45,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     filterMode: -1
-    aniso: -1
+    aniso: 16
     mipBias: -1
     wrapMode: 1
   nPOTScale: 0
@@ -38,7 +53,7 @@ TextureImporter:
   rGBM: 0
   compressionQuality: 50
   allowsAlphaSplitting: 0
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -51,7 +66,202 @@ TextureImporter:
   buildTargetSettings: []
   spriteSheet:
     serializedVersion: 2
-    sprites: []
+    sprites:
+    - serializedVersion: 2
+      name: UI B_0
+      rect:
+        serializedVersion: 2
+        x: 43
+        y: 593
+        width: 146
+        height: 146
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: UI B_1
+      rect:
+        serializedVersion: 2
+        x: 220
+        y: 593
+        width: 538
+        height: 146
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: UI B_2
+      rect:
+        serializedVersion: 2
+        x: 807
+        y: 590
+        width: 161
+        height: 149
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: UI B_3
+      rect:
+        serializedVersion: 2
+        x: 45
+        y: 404
+        width: 145
+        height: 146
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: UI B_4
+      rect:
+        serializedVersion: 2
+        x: 218
+        y: 404
+        width: 538
+        height: 146
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: UI B_5
+      rect:
+        serializedVersion: 2
+        x: 812
+        y: 405
+        width: 161
+        height: 150
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: UI B_6
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 208
+        width: 478
+        height: 181
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: UI B_7
+      rect:
+        serializedVersion: 2
+        x: 1023
+        y: 767
+        width: 1
+        height: 1
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: UI B_8
+      rect:
+        serializedVersion: 2
+        x: 549
+        y: 24
+        width: 197
+        height: 362
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 1, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: UI B_9
+      rect:
+        serializedVersion: 2
+        x: 797
+        y: 18
+        width: 196
+        height: 374
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: UI B_10
+      rect:
+        serializedVersion: 2
+        x: 38
+        y: 19
+        width: 107
+        height: 182
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: UI B_11
+      rect:
+        serializedVersion: 2
+        x: 198
+        y: 17
+        width: 89
+        height: 168
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: UI B_12
+      rect:
+        serializedVersion: 2
+        x: 342
+        y: 12
+        width: 143
+        height: 174
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: UI B_13
+      rect:
+        serializedVersion: 2
+        x: 1023
+        y: 767
+        width: 1
+        height: 1
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: UI B_14
+      rect:
+        serializedVersion: 2
+        x: 1023
+        y: 767
+        width: 1
+        height: 1
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
     outline: []
   spritePackingTag: 
   userData: 

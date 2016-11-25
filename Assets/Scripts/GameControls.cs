@@ -12,9 +12,8 @@ public class GameControls : MonoBehaviour {
     private int frameCt;
 
     public ParticleSystem Smoke;
-    /// <summary>
-    /// Amount that's deleted every evaporation frame.
-    /// </summary>
+    
+    [Tooltip("Amount that's deleted every evaporation frame")]
     public int EvapoMount;
     /// <summary>
     /// Speed at which the lid top decreases.
@@ -85,6 +84,7 @@ public class GameControls : MonoBehaviour {
         if (Lid.CurrFill == LidMovement.FillStates.Large)
             return;
         Parts.AddParts();
+        Parts.IsBoiling = false;
         Parts.HeatUpRateMod += HeatUpVolMod;
         Lid.FillSome();
     }

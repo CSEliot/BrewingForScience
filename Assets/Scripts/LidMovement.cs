@@ -126,13 +126,12 @@ public class LidMovement : MonoBehaviour {
     /// <returns></returns>
     public bool SmoothEmpty(float amt)
     {
-        if (transform.localPosition.y - amt <= YMin) {
+        if (transform.localPosition.y - amt <=  YMin) {
             Parts.ClearParts();
             return true;
         }
         if (transform.localPosition.y - amt < YMin + ((float)CurrFill * MovIncrement)) {
             CurrFill--;
-            CBUG.Do("CUYRR MINUS IN SMOOTH");
         }
         
         transform.Translate(new Vector3(

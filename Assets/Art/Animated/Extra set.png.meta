@@ -1,9 +1,25 @@
 fileFormatVersion: 2
 guid: 6e2143ad3b672a64dacd08388577d366
-timeCreated: 1479943767
+timeCreated: 1480089344
 licenseType: Free
 TextureImporter:
-  fileIDToRecycleName: {}
+  fileIDToRecycleName:
+    21300000: Extra set_0
+    21300002: Extra set_1
+    21300004: Extra set_2
+    21300006: Extra set_3
+    21300008: Extra set_4
+    21300010: Extra set_5
+    21300012: Extra set_6
+    21300014: Extra set_7
+    21300016: Extra set_8
+    21300018: Extra set_9
+    21300020: Extra set_10
+    21300022: Extra set_11
+    21300024: Extra set_12
+    21300026: Extra set_13
+    21300028: Extra set_14
+    21300030: Extra set_15
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -38,7 +54,7 @@ TextureImporter:
   rGBM: 0
   compressionQuality: 50
   allowsAlphaSplitting: 0
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 1
@@ -51,7 +67,215 @@ TextureImporter:
   buildTargetSettings: []
   spriteSheet:
     serializedVersion: 2
-    sprites: []
+    sprites:
+    - serializedVersion: 2
+      name: Extra set_0
+      rect:
+        serializedVersion: 2
+        x: 23
+        y: 463
+        width: 144
+        height: 144
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Extra set_1
+      rect:
+        serializedVersion: 2
+        x: 189
+        y: 466
+        width: 266
+        height: 277
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Extra set_2
+      rect:
+        serializedVersion: 2
+        x: 510
+        y: 603
+        width: 109
+        height: 116
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Extra set_3
+      rect:
+        serializedVersion: 2
+        x: 696
+        y: 600
+        width: 268
+        height: 147
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Extra set_4
+      rect:
+        serializedVersion: 2
+        x: 1023
+        y: 767
+        width: 1
+        height: 1
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Extra set_5
+      rect:
+        serializedVersion: 2
+        x: 511
+        y: 464
+        width: 107
+        height: 115
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Extra set_6
+      rect:
+        serializedVersion: 2
+        x: 699
+        y: 418
+        width: 269
+        height: 147
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Extra set_7
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 398
+        width: 575
+        height: 47
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Extra set_8
+      rect:
+        serializedVersion: 2
+        x: 31
+        y: 358
+        width: 554
+        height: 21
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Extra set_9
+      rect:
+        serializedVersion: 2
+        x: 1023
+        y: 767
+        width: 1
+        height: 1
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Extra set_10
+      rect:
+        serializedVersion: 2
+        x: 195
+        y: 169
+        width: 239
+        height: 162
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Extra set_11
+      rect:
+        serializedVersion: 2
+        x: 1023
+        y: 767
+        width: 1
+        height: 1
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Extra set_12
+      rect:
+        serializedVersion: 2
+        x: 498
+        y: 41
+        width: 134
+        height: 264
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Extra set_13
+      rect:
+        serializedVersion: 2
+        x: 649
+        y: 13
+        width: 371
+        height: 378
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Extra set_14
+      rect:
+        serializedVersion: 2
+        x: 183
+        y: 12
+        width: 262
+        height: 143
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Extra set_15
+      rect:
+        serializedVersion: 2
+        x: 23
+        y: 607
+        width: 144
+        height: 140
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
     outline: []
   spritePackingTag: 
   userData: 

@@ -11,15 +11,21 @@ public class PartMan : MonoBehaviour
     public LidMovement Lid;
 
     #region Controls behavior
+    [Tooltip("How many particles per volume of coffee")]
     public int PartsPerState;
+    [Tooltip("Starting speed of particles")]
     public int StartSpeed;
+    [Tooltip("Multiplicative speed applied to particles every DeltaHeatUpRate")]
     public float SpeedScale;
+    [Tooltip("If all particles are above this point, boiling occurs")]
     public float BoilPoint;
+    [Tooltip("# of frames that an evaporation will occur")]
     public float EvapoRate;
+    [Tooltip("The change the heatup rate experiences on +/-'ing the heatup rate")]
     public float DeltaHeatUpRate;
-    public float MaxHeatUpRate;
-    public float MinHeatUpRate;
+    public float MaxFramesPerHeatUp;
     public bool IsBoiling;
+    [Tooltip("Alters heatup rate based on volume of liquid")]
     public float HeatUpRateMod;
     #endregion
 
@@ -28,7 +34,8 @@ public class PartMan : MonoBehaviour
     private int partArrayLen;
     private ParticleSystem.Particle[] partArray;
     private float heatUpRate;
-    private float startingHeatUpRate;
+    private float minHeatUpRate;
+    private const int heatUpStates = 5;
     #endregion
 
     #region Test VARS
@@ -44,9 +51,11 @@ public class PartMan : MonoBehaviour
         PartSys = GetComponent<ParticleSystem>();
         partArray = new ParticleSystem.Particle[PartSys.maxParticles];
         PartSys.startSpeed = StartSpeed;
-        startingHeatUpRate = MaxHeatUpRate;
-        heatUpRate = startingHeatUpRate;
-
+        heatUpRate = MaxFramesPerHeatUp + 1;
+        minHeatUpRate = MaxFramesPerHeatUp - (DeltaHeatUpRate * heatUpStates);
+        if(minHeatUpRate <= 0) {
+            CBUG.SrsError("MIN HEAT RATE TOO LOW, LOWER DELTA");
+        }
     }
 
     // Update is called once per frame
@@ -54,7 +63,7 @@ public class PartMan : MonoBehaviour
     {
         frameCt++;
 
-        if(frameCt % (heatUpRate + HeatUpRateMod) == 0 && heatUpRate != MaxHeatUpRate) {
+        if(frameCt % (heatUpRate + HeatUpRateMod) == 0 && heatUpRate < MaxFramesPerHeatUp) {
             IncreaseSpeed();
         }
 
@@ -125,7 +134,7 @@ public class PartMan : MonoBehaviour
 
         partArray = new ParticleSystem.Particle[PartSys.maxParticles];
         partArrayLen = PartSys.GetParticles(partArray);
-        IsBoiling = PartSys.maxParticles != 0;
+        IsBoiling = !(PartSys.maxParticles == 0);
         for (int x = 0; x < partArrayLen; x++) {
             if (partArray[x].velocity.sqrMagnitude < BoilPoint) {
                 IsBoiling = false;
@@ -133,30 +142,30 @@ public class PartMan : MonoBehaviour
             partArray[x].velocity = new Vector3(
                 partArray[x].velocity.x * SpeedScale,
                 partArray[x].velocity.y * SpeedScale,
-                0f
+                0f 
             );
         }
-        for (int x = 0; x < partArrayLen; x++) {
-            if (IsBoiling)
-                partArray[x].lifetime = partArray[x].startLifetime / 2;
-            else {
-                partArray[x].lifetime = partArray[x].startLifetime;
-            }
-            //Lifetime used here to change sprite in particle.
-        }
+        //for (int x = 0; x < partArrayLen; x++) {
+            //if (IsBoiling)
+            //    partArray[x].lifetime = partArray[x].startLifetime / 2;
+            //else {
+            //    partArray[x].lifetime = partArray[x].startLifetime;
+            //}
+        //    //Lifetime used here to change sprite in particle.
+        //}
         PartSys.SetParticles(partArray, partArrayLen);
     }
 
     public void IncreaseRate()
     {
-        if (heatUpRate - DeltaHeatUpRate < MinHeatUpRate)
+        if (heatUpRate < minHeatUpRate)
             return;
         heatUpRate -= DeltaHeatUpRate; 
     }
 
     public void DecreaseRate()
     {
-        if (heatUpRate + DeltaHeatUpRate > MaxHeatUpRate)
+        if (heatUpRate > MaxFramesPerHeatUp)
             return;
         heatUpRate += DeltaHeatUpRate;
     }
@@ -178,6 +187,12 @@ public class PartMan : MonoBehaviour
     public float HeatUpRate {
         get {
             return heatUpRate;
+        }
+    }
+
+    public float MinHeatUpRate {
+        get {
+            return minHeatUpRate;
         }
     }
 }

@@ -6,12 +6,17 @@ public class ArrayTargetActive : MonoBehaviour {
     public int StartActive;
     public bool LoopArray;
 
+    public bool ToggleOnLoop;
+    [Tooltip("Target to Toggle upon deactivating the final target in the array.")]
+    public GameObject TargetToToggle;
+
     public GameObject[] Targets;
 
     private int currentActive;
+    bool hasLooped;
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start () {
         currentActive = StartActive;
 	}
 	
@@ -39,10 +44,13 @@ public class ArrayTargetActive : MonoBehaviour {
 
     private void _activate(int targetNum)
     {
-        for(int x = 0; x < Targets.Length; x++) {
+        hasLooped = currentActive == 0;
+        for (int x = 0; x < Targets.Length; x++) {
             Targets[x].SetActive(false);
         }
-        if (!LoopArray && currentActive == Targets.Length - 1)
+        if (hasLooped && ToggleOnLoop)
+            TargetToToggle.SetActive(!TargetToToggle.activeSelf);
+        if (!LoopArray && hasLooped)
             return;
         Targets[targetNum].SetActive(true);
     }

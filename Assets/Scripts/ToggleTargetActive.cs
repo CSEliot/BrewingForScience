@@ -17,6 +17,6 @@ public class ToggleTargetActive : MonoBehaviour {
 
     public void Toggle()
     {
-        Target.SetActive(!Target.activeSelf); 
+        Target.SetActive(!Target.activeSelf);  
     }
 }

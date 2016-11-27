@@ -15,7 +15,7 @@ public class LidMovement : MonoBehaviour {
     {
         Empty,
         Small,
-        SmallMedium,
+        SmallMedium, 
         Medium,
         LargeMedium,
         Large

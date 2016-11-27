@@ -10,7 +10,7 @@ public class RadController : MonoBehaviour {
     private float currentHeatUpRate;
 
 	// Use this for initialization
-	void Start () {
+	void Awake () {
 
         currentHeatUpRate = Parts.HeatUpRate;
 

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 /// <summary>
@@ -24,8 +25,52 @@ public class GameControls : MonoBehaviour {
     /// </summary>
     public float HeatUpVolMod;
 
-	// Use this for initialization
-	void Start () {
+    private float[] volHeights;
+
+    [System.Serializable]
+    public struct NPC
+    {
+        public string Request;
+        public string Thanks;
+        public string Anger;
+        public float MinTemp;
+        public float MaxTemp;
+        public float MinVol;
+        public float MaxVol;
+        public Sprite Img;
+        public bool IsQuizGuy;
+    }
+
+    public NPC[] Day1;
+    public NPC[] Day2;
+    public NPC[] Day3;
+
+    private NPC[][] Days;
+
+    public Image[] NPC_Line;
+
+    private int currentNPC;
+    private int currentDay;
+
+    public enum PlayState
+    {
+
+    }
+
+    // Use this for initialization
+    void Start () {
+
+        volHeights = new float[] { -0.03f, 0.7f, 1.43f, 2.16f, 2.89f, 3.62f };
+
+        currentDay = 0;
+        currentNPC = 0;
+
+        Days = new NPC[3][] { Day1, Day2, Day3 };
+        
+        for (int x = 0; x < NPC_Line.Length; x++) {
+            NPC_Line[x].sprite = Day1[x].Img;
+        }
+
         Lid.SetFillState(LidMovement.FillStates.Empty);
         Parts.ClearParts();
         //EvapoMount = (int)(/*evapoVolSpeed / Lid.MovIncrement) + 1*/;
@@ -35,6 +80,8 @@ public class GameControls : MonoBehaviour {
 	void Update () {
 
         frameCt++;
+
+
 
         if (Parts.IsBoiling && !Smoke.isPlaying) {
             Smoke.Play();
@@ -51,6 +98,11 @@ public class GameControls : MonoBehaviour {
                 }
             }
         }
+    }
+
+    public void SpawnNPC()
+    {
+
     }
 
     /// <summary>

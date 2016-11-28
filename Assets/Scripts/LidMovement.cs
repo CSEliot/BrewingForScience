@@ -10,6 +10,7 @@ public class LidMovement : MonoBehaviour {
     private float currY;
 
     public PartMan Parts;
+    public GameControls GameCont;
 
     public enum FillStates
     {
@@ -21,7 +22,9 @@ public class LidMovement : MonoBehaviour {
         Large
     }
     public FillStates CurrFill; 
-    private int totalStates = 6; 
+    private int totalStates = 6;
+
+    private float currHeight;
 
     // Use this for initialization
     void Start () {
@@ -39,11 +42,12 @@ public class LidMovement : MonoBehaviour {
         if (transform.localPosition.y + 1f > YMax)
             return;
         CurrFill++;
-        CBUG.Log("Height is: " + (YMin + ((float)CurrFill * MovIncrement)));
+        currHeight = (YMin + ((float)CurrFill * MovIncrement));
+        
         //if amt is defined as 0 or less, default movIncrement is used.
         transform.localPosition = new Vector3(
                     transform.localPosition.x,
-                    YMin + ((float)CurrFill * MovIncrement),
+                    currHeight,
                     transform.localPosition.z
         );
 
@@ -61,10 +65,10 @@ public class LidMovement : MonoBehaviour {
         if (transform.localPosition.y <= YMin)
             return true;
         CurrFill--;
-        CBUG.Log("Height is: " + (YMin + ((float)CurrFill * MovIncrement)));
+        currHeight = (YMin + ((float)CurrFill * MovIncrement));
         transform.localPosition = new Vector3(
                     transform.localPosition.x,
-                    YMin + ((float)CurrFill * MovIncrement),
+                    currHeight,
                     transform.localPosition.z
         );
         if (transform.localPosition.y <= YMin) {
@@ -87,6 +91,12 @@ public class LidMovement : MonoBehaviour {
     public int TotalStates {
         get {
             return totalStates;
+        }
+    }
+
+    public float CurrHeight {
+        get {
+            return currHeight;
         }
     }
 
@@ -134,6 +144,7 @@ public class LidMovement : MonoBehaviour {
         }
         if (transform.localPosition.y - amt < YMin + ((float)CurrFill * MovIncrement)) {
             CurrFill--;
+            Parts.HeatUpRateMod -= GameCont.HeatUpVolMod;
         }
         
         transform.Translate(new Vector3(

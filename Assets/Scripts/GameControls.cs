@@ -10,7 +10,7 @@ public class GameControls : MonoBehaviour {
     public LidMovement Lid;
     public PartMan Parts;
 
-    private int frameCt;
+    private float prevTime;
 
     public ParticleSystem Smoke;
     
@@ -37,7 +37,6 @@ public class GameControls : MonoBehaviour {
         public float MaxTemp;
         public float MinVol;
         public float MaxVol;
-        public int CharNum;
         public bool IsQuizGuy;
     }
 
@@ -98,17 +97,14 @@ public class GameControls : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-        frameCt++;
-
-
-
         if (Parts.IsBoiling && !Smoke.isPlaying) {
             Smoke.Play();
         }else if (!Parts.IsBoiling && Smoke.isPlaying) {
             Smoke.Stop();
         }
         if (Parts.IsBoiling) {
-            if (frameCt % Parts.EvapoRate == 0) {
+            if (Time.time - prevTime >= Parts.EvapoRate) {
+                prevTime = Time.time;
                 //Incremental parts deletion
                 Parts.DeleteParts(EvapoMount);
                 //Incremental volume lowering
@@ -128,13 +124,29 @@ public class GameControls : MonoBehaviour {
             NPC_Line[x - currentNPC - 1].enabled = true;
             NPC_Line[x - currentNPC - 1].sprite = CharSprites[DaysOrder[currentDay][x]].Img[2];
         }
+        //Set question
         SpeechBubble.SetActive(true);
         SpeechBubble.GetComponentInChildren<Text>().text = Days[currentDay][currentNPC].Request;
-        //Set question
         //Tell servable class char stats
+        
         //DO IF IS QUIZ GUY CHECK
         //DO if is end of day check
         //do
+    }
+
+    public void Serve()
+    {
+        if(Parts.AvgSpd >= Days[currentDay][currentNPC].MinTemp && Parts.AvgSpd <= Days[currentDay][currentNPC].MaxTemp &&
+           Lid.CurrHeight >= volHeights[(int)Days[currentDay][currentNPC].MinVol] && Lid.CurrHeight <= volHeights[(int)Days[currentDay][currentNPC].MaxVol]) {
+            SpeechBubble.GetComponentInChildren<Text>().text = Days[currentDay][currentNPC].Thanks;
+            //animate leaving
+            //fade
+            //spawn next
+            ClearCoffee();
+        } else {
+            SpeechBubble.GetComponentInChildren<Text>().text = Days[currentDay][currentNPC].Anger;
+            ClearCoffee();
+        }
     }
 
     /// <summary>
@@ -186,11 +198,11 @@ public class GameControls : MonoBehaviour {
 
     public void IncreaseHeat()
     {
-        Parts.IncreaseRate();
+        Parts.DecreaseRate();
     }
 
     public void DecreaseHeat()
     {
-        Parts.DecreaseRate();
+        Parts.IncreaseRate();
     }
 }

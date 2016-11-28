@@ -23,7 +23,7 @@ public class PartMan : MonoBehaviour
     public float EvapoRate;
     [Tooltip("The change the heatup rate experiences on +/-'ing the heatup rate")]
     public float DeltaHeatUpRate;
-    public float MaxFramesPerHeatUp;
+    public float MaxSecondsPerHeatUp;
     public bool IsBoiling;
     [Tooltip("Alters heatup rate based on volume of liquid")]
     public float HeatUpRateMod;
@@ -39,7 +39,7 @@ public class PartMan : MonoBehaviour
     #endregion
 
     #region Test VARS
-    private float frameCt;
+    private float prevTime;
     private float avgSpd = 0f;
     private float totalSpd = 0f;
     private float totalSamples = 0f;
@@ -51,20 +51,20 @@ public class PartMan : MonoBehaviour
         PartSys = GetComponent<ParticleSystem>();
         partArray = new ParticleSystem.Particle[PartSys.maxParticles];
         PartSys.startSpeed = StartSpeed;
-        heatUpRate = MaxFramesPerHeatUp + 1;
-        minHeatUpRate = MaxFramesPerHeatUp - (DeltaHeatUpRate * heatUpStates);
-        if(minHeatUpRate <= 0) {
-            CBUG.SrsError("MIN HEAT RATE TOO LOW, LOWER DELTA");
+        heatUpRate = MaxSecondsPerHeatUp;
+        minHeatUpRate = MaxSecondsPerHeatUp - (DeltaHeatUpRate * (float)(heatUpStates));
+        if(minHeatUpRate < 0) {
+            CBUG.SrsError("MIN HEAT RATE TOO LOW, LOWER DELTA or RAISE MAXSECONDS: " + minHeatUpRate);
         }
     }
-
+    
     // Update is called once per frame
-    void Update()
-    {
-        frameCt++;
+    void FixedUpdate()
+    { 
 
-        if(frameCt % (heatUpRate + HeatUpRateMod) == 0 && heatUpRate < MaxFramesPerHeatUp) {
+        if(Time.time - prevTime >= (heatUpRate + HeatUpRateMod) && heatUpRate < MaxSecondsPerHeatUp) {
             IncreaseSpeed();
+            prevTime = Time.time;
         }
 
         //if (frameCt % 3 == 0) {
@@ -137,17 +137,17 @@ public class PartMan : MonoBehaviour
         IsBoiling = !(PartSys.maxParticles == 0);
         totalSpd = 0;
         for (int x = 0; x < partArrayLen; x++) {
-            if (partArray[x].velocity.sqrMagnitude < BoilPoint) {
-                IsBoiling = false;
-            }
             partArray[x].velocity = new Vector3(
                 partArray[x].velocity.x * SpeedScale,
                 partArray[x].velocity.y * SpeedScale,
-                0f 
+                0f
             );
             totalSpd += partArray[x].velocity.sqrMagnitude;
         }
         avgSpd = totalSpd / partArrayLen;
+        if (avgSpd < BoilPoint) {
+            IsBoiling = false;
+        }
         //for (int x = 0; x < partArrayLen; x++) {
             //if (IsBoiling)
             //    partArray[x].lifetime = partArray[x].startLifetime / 2;
@@ -161,16 +161,16 @@ public class PartMan : MonoBehaviour
 
     public void IncreaseRate()
     {
-        if (heatUpRate < minHeatUpRate)
+        if (heatUpRate > MaxSecondsPerHeatUp)
             return;
-        heatUpRate -= DeltaHeatUpRate; 
+        heatUpRate += DeltaHeatUpRate; 
     }
 
     public void DecreaseRate()
     {
-        if (heatUpRate > MaxFramesPerHeatUp)
+        if (heatUpRate < minHeatUpRate)
             return;
-        heatUpRate += DeltaHeatUpRate;
+        heatUpRate -= DeltaHeatUpRate;
     }
 
     public void DecreaseSpeed()
@@ -196,6 +196,12 @@ public class PartMan : MonoBehaviour
     public float MinHeatUpRate {
         get {
             return minHeatUpRate;
+        }
+    }
+
+    public float AvgSpd {
+        get {
+            return avgSpd;
         }
     }
 }

@@ -135,6 +135,7 @@ public class PartMan : MonoBehaviour
         partArray = new ParticleSystem.Particle[PartSys.maxParticles];
         partArrayLen = PartSys.GetParticles(partArray);
         IsBoiling = !(PartSys.maxParticles == 0);
+        totalSpd = 0;
         for (int x = 0; x < partArrayLen; x++) {
             if (partArray[x].velocity.sqrMagnitude < BoilPoint) {
                 IsBoiling = false;
@@ -144,7 +145,9 @@ public class PartMan : MonoBehaviour
                 partArray[x].velocity.y * SpeedScale,
                 0f 
             );
+            totalSpd += partArray[x].velocity.sqrMagnitude;
         }
+        avgSpd = totalSpd / partArrayLen;
         //for (int x = 0; x < partArrayLen; x++) {
             //if (IsBoiling)
             //    partArray[x].lifetime = partArray[x].startLifetime / 2;
@@ -179,7 +182,7 @@ public class PartMan : MonoBehaviour
                 partArray[x].velocity.x / SpeedScale,
                 partArray[x].velocity.y / SpeedScale,
                 0f
-            );
+            );  
         }
         PartSys.SetParticles(partArray, partArrayLen);
     }

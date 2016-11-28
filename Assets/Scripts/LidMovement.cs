@@ -20,7 +20,7 @@ public class LidMovement : MonoBehaviour {
         LargeMedium,
         Large
     }
-    public FillStates CurrFill;
+    public FillStates CurrFill; 
     private int totalStates = 6;
 
     // Use this for initialization
@@ -39,12 +39,14 @@ public class LidMovement : MonoBehaviour {
         if (transform.localPosition.y + 1f > YMax)
             return;
         CurrFill++;
+        CBUG.Log("Height is: " + (YMin + ((float)CurrFill * MovIncrement)));
         //if amt is defined as 0 or less, default movIncrement is used.
         transform.localPosition = new Vector3(
                     transform.localPosition.x,
                     YMin + ((float)CurrFill * MovIncrement),
                     transform.localPosition.z
         );
+
         //transform.Translate(new Vector3(
         //    0f,
         //    movIncrement,
@@ -59,7 +61,7 @@ public class LidMovement : MonoBehaviour {
         if (transform.localPosition.y <= YMin)
             return true;
         CurrFill--;
-
+        CBUG.Log("Height is: " + (YMin + ((float)CurrFill * MovIncrement)));
         transform.localPosition = new Vector3(
                     transform.localPosition.x,
                     YMin + ((float)CurrFill * MovIncrement),

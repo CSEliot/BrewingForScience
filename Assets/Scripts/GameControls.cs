@@ -37,15 +37,28 @@ public class GameControls : MonoBehaviour {
         public float MaxTemp;
         public float MinVol;
         public float MaxVol;
-        public Sprite Img;
+        public int CharNum;
         public bool IsQuizGuy;
     }
+
+    [System.Serializable]
+    public struct NPCImgs
+    {
+        [SerializeField] public Sprite[] Img;
+    }
+
+    public NPCImgs[] CharSprites;
+
+    public GameObject SpeechBubble;
+
+    public Animator FrontChar;
 
     public NPC[] Day1;
     public NPC[] Day2;
     public NPC[] Day3;
-
     private NPC[][] Days;
+    
+    private int[][] DaysOrder;
 
     public Image[] NPC_Line;
 
@@ -60,15 +73,21 @@ public class GameControls : MonoBehaviour {
     // Use this for initialization
     void Start () {
 
-        volHeights = new float[] { -0.03f, 0.7f, 1.43f, 2.16f, 2.89f, 3.62f };
+        volHeights = new float[] {-1f, -0.03f, 0.7f, 1.43f, 2.16f, 2.89f, 3.62f, 5f};
 
         currentDay = 0;
         currentNPC = 0;
 
+        DaysOrder = new int[][] {
+            new int[5] { 0, 1, 2, 3, 4 },
+            new int[5] { 4, 1, 3, 0, 2 },
+            new int[5] { 2, 0, 4, 1, 3 }
+        };
+
         Days = new NPC[3][] { Day1, Day2, Day3 };
         
         for (int x = 0; x < NPC_Line.Length; x++) {
-            NPC_Line[x].sprite = Day1[x].Img;
+            NPC_Line[x].sprite = CharSprites[DaysOrder[currentDay][x]].Img[2];
         }
 
         Lid.SetFillState(LidMovement.FillStates.Empty);
@@ -102,7 +121,20 @@ public class GameControls : MonoBehaviour {
 
     public void SpawnNPC()
     {
-
+        for(int x = 0; x < NPC_Line.Length; x++) {
+            NPC_Line[x].enabled = false;
+        }
+        for(int x = 0 + currentNPC + 1; x < NPC_Line.Length; x++) {
+            NPC_Line[x - currentNPC - 1].enabled = true;
+            NPC_Line[x - currentNPC - 1].sprite = CharSprites[DaysOrder[currentDay][x]].Img[2];
+        }
+        SpeechBubble.SetActive(true);
+        SpeechBubble.GetComponentInChildren<Text>().text = Days[currentDay][currentNPC].Request;
+        //Set question
+        //Tell servable class char stats
+        //DO IF IS QUIZ GUY CHECK
+        //DO if is end of day check
+        //do
     }
 
     /// <summary>

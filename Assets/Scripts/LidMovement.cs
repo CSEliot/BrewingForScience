@@ -21,7 +21,7 @@ public class LidMovement : MonoBehaviour {
         Large
     }
     public FillStates CurrFill; 
-    private int totalStates = 6;
+    private int totalStates = 6; 
 
     // Use this for initialization
     void Start () {

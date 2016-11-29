@@ -56,6 +56,7 @@ public class PartMan : MonoBehaviour
         if(minHeatUpRate < 0) {
             CBUG.SrsError("MIN HEAT RATE TOO LOW, LOWER DELTA or RAISE MAXSECONDS: " + minHeatUpRate);
         }
+        avgSpd = PartSys.startSpeed * PartSys.startSpeed;
     }
     
     // Update is called once per frame
@@ -131,7 +132,6 @@ public class PartMan : MonoBehaviour
     {
         //if (CurrSpeed + SpeedScale > MaxSpeed)
         //    return;
-
         partArray = new ParticleSystem.Particle[PartSys.maxParticles];
         partArrayLen = PartSys.GetParticles(partArray);
         IsBoiling = !(PartSys.maxParticles == 0);
@@ -203,5 +203,20 @@ public class PartMan : MonoBehaviour
         get {
             return avgSpd;
         }
+    }
+
+    public void CalculateAvgSpeed()
+    {
+        partArray = new ParticleSystem.Particle[PartSys.maxParticles];
+        partArrayLen = PartSys.GetParticles(partArray);
+        //IsBoiling = !(PartSys.maxParticles == 0);
+        totalSpd = 0;
+        for (int x = 0; x < partArrayLen; x++) {
+            totalSpd += partArray[x].velocity.sqrMagnitude;
+        }
+        //if (avgSpd < BoilPoint) {
+        //    IsBoiling = false;
+        //}
+        avgSpd = totalSpd / partArrayLen;
     }
 }

@@ -7,6 +7,8 @@ public class GetSprite : MonoBehaviour {
     public Image spr;
     public GameControls cont;
 
+    public AudioManager Audio;
+
 	// Use this for initialization
 	void Start () {
 	
@@ -38,6 +40,18 @@ public class GetSprite : MonoBehaviour {
     }
 
     public void SetSpawnNPC()
+    {
+        if(cont.CurrentNPC + 1 >= cont.TotalCharactersPerDay && cont.CurrentDay < 2) {
+            cont.DayPanels[cont.CurrentDay + 1].SetActive(true);
+            Audio.MusicPlayer.Stop();
+            Audio.MusicPlayer.clip = Audio.Musics[cont.CurrentDay + 1];
+            Audio.MusicPlayer.Play();
+        } else {
+            cont.SpawnNPC();
+        }
+    }
+
+    public void SetSpawnNPC2()
     {
         cont.SpawnNPC();
     }

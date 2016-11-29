@@ -10,6 +10,15 @@ public class GameControls : MonoBehaviour {
     public LidMovement Lid;
     public PartMan Parts;
 
+    public GameObject TempControls;
+    public GameObject[] DayPanels;
+    public GameObject EndGamePanel;
+    public GameObject HeatControls;
+    public GameObject CoolControls;
+
+    private int currentTemp = 0;
+    private int MaxTemp = 5;
+
     private float prevTime;
 
     public ParticleSystem Smoke;
@@ -40,12 +49,23 @@ public class GameControls : MonoBehaviour {
         public float MinVol;
         public float MaxVol;
         public bool IsQuizGuy;
+        public float MinTherm;
+        public float MaxTherm;
     }
 
     [System.Serializable]
     public struct NPCImgs
     {
         [SerializeField] public Sprite[] Img;
+    }
+
+    [System.Serializable]
+    public struct QnA
+    {
+        string Question;
+        [SerializeField]
+        string[] Answers;
+        int CorrectAnswer;
     }
 
     public NPCImgs[] CharSprites;
@@ -64,8 +84,8 @@ public class GameControls : MonoBehaviour {
 
     public Image[] NPC_Line;
 
-    private int currentNPC;
-    private int currentDay;
+    public int CurrentNPC;
+    public int CurrentDay;
 
     private bool InMinSpd;
     private bool InMaxSpd;
@@ -76,15 +96,15 @@ public class GameControls : MonoBehaviour {
     private float MinVol;
     private float MaxVol;
 
-    public int totalCharactersPerDay;
+    public int TotalCharactersPerDay;
 
     // Use this for initialization
     void Start () {
 
         volHeights = new float[] {-1f, -0.03f, 0.7f, 1.43f, 2.16f, 2.89f, 3.62f, 5f};
 
-        currentDay = 0;
-        currentNPC = -1;
+        CurrentDay = 0;
+        CurrentNPC = -1;
 
         DaysOrder = new int[][] {
             new int[5] { 0, 1, 2, 3, 4 },
@@ -95,7 +115,7 @@ public class GameControls : MonoBehaviour {
         Days = new NPC[3][] { Day1, Day2, Day3 };
         
         for (int x = 0; x < NPC_Line.Length; x++) {
-            NPC_Line[x].sprite = CharSprites[DaysOrder[currentDay][x]].Img[2];
+            NPC_Line[x].sprite = CharSprites[DaysOrder[CurrentDay][x]].Img[2];
         }
 
         Lid.SetFillState(LidMovement.FillStates.Empty);
@@ -126,19 +146,24 @@ public class GameControls : MonoBehaviour {
 
     public void SpawnNPC()
     {
-        currentNPC++;
+        CurrentNPC++;
 
-        if(currentNPC > totalCharactersPerDay) {
-            currentNPC = 0;
-            currentDay++;
+        if(CurrentNPC >= TotalCharactersPerDay) {
+            CurrentNPC = 0;
+            CurrentDay++;
+            if(CurrentDay == 3) {
+                EndGamePanel.SetActive(true);
+                return;
+            }
+            TempControls.SetActive(true);
         }
 
         for (int x = 0; x < NPC_Line.Length; x++) {
             NPC_Line[x].enabled = false;
         }
-        for(int x = 0 + currentNPC + 1; x < NPC_Line.Length; x++) {
-            NPC_Line[x - currentNPC - 1].enabled = true;
-            NPC_Line[x - currentNPC - 1].sprite = CharSprites[DaysOrder[currentDay][x]].Img[2];
+        for(int x = 0 + CurrentNPC + 1; x < NPC_Line.Length; x++) {
+            NPC_Line[x - CurrentNPC - 1].enabled = true;
+            NPC_Line[x - CurrentNPC - 1].sprite = CharSprites[DaysOrder[CurrentDay][x]].Img[2];
         }
         FrontChar.SetTrigger("WalkIn");
         //DO IF IS QUIZ GUY CHECK
@@ -149,11 +174,11 @@ public class GameControls : MonoBehaviour {
     {
         //Set question
         SpeechBubble.SetActive(true);
-        SpeechBubble.GetComponentInChildren<Text>().text = Days[currentDay][currentNPC].Request;
+        SpeechBubble.GetComponentInChildren<Text>().text = Days[CurrentDay][CurrentNPC].Request;
 
         QuestionAsked = true;
 
-        if (Days[currentDay][currentNPC].IsQuizGuy) {
+        if (Days[CurrentDay][CurrentNPC].IsQuizGuy) {
 
         }
     }
@@ -172,34 +197,32 @@ public class GameControls : MonoBehaviour {
 
     public void Serve()
     {
-
         if (!QuestionAsked)
             return;
 
-        MaxSpd = Mathf.Pow(Days[currentDay][currentNPC].MaxTemp, 2);
-        MinSpd = Mathf.Pow(Days[currentDay][currentNPC].MinTemp, 2);
-        MinVol = volHeights[(int)Days[currentDay][currentNPC].MinVol];
-        MaxVol = volHeights[(int)Days[currentDay][currentNPC].MaxVol];
+        MaxSpd = Mathf.Pow(Days[CurrentDay][CurrentNPC].MaxTemp, 2);
+        MinSpd = Mathf.Pow(Days[CurrentDay][CurrentNPC].MinTemp, 2);
+        MinVol = volHeights[(int)Days[CurrentDay][CurrentNPC].MinVol];
+        MaxVol = volHeights[(int)Days[CurrentDay][CurrentNPC].MaxVol];
         InMinSpd = Parts.AvgSpd >= MinSpd;
         InMaxSpd = Parts.AvgSpd <= MaxSpd;
         InMinVol = Lid.CurrHeight >= MinVol;
         InMaxVol = Lid.CurrHeight <= MaxVol;
 
         if ( InMinSpd && InMaxSpd && InMinVol && InMaxVol ) {
-            SpeechBubble.GetComponentInChildren<Text>().text = Days[currentDay][currentNPC].Thanks;
+            SpeechBubble.GetComponentInChildren<Text>().text = Days[CurrentDay][CurrentNPC].Thanks;
             //animate leaving
             FrontChar.SetTrigger("WalkOut");
             //fade
             //FrontChar.set
             //spawn next
             //check somewhere to go to next day
-            ClearCoffee();
+            //ClearCoffee();
+            QuestionAsked = false;
         } else {
-            SpeechBubble.GetComponentInChildren<Text>().text = Days[currentDay][currentNPC].Anger;
-            ClearCoffee();
+            SpeechBubble.GetComponentInChildren<Text>().text = Days[CurrentDay][CurrentNPC].Anger;
+            //ClearCoffee();
         }
-
-        QuestionAsked = false;
     }
 
     /// <summary>
@@ -251,16 +274,28 @@ public class GameControls : MonoBehaviour {
 
     public void IncreaseHeat()
     {
+        if (currentTemp >= MaxTemp) {
+            HeatControls.SetActive(false);
+        } else {
+            CoolControls.SetActive(true);
+            currentTemp++;
+        }
         Parts.DecreaseRate();
     }
 
     public void DecreaseHeat()
     {
+        if(currentTemp <= 0) {
+            CoolControls.SetActive(false);
+        } else {
+            HeatControls.SetActive(true);
+            currentTemp--;
+        }
         Parts.IncreaseRate();
     }
 
     public Sprite GetCurrentCharSprite(float num)
     {
-        return CharSprites[DaysOrder[currentDay][currentNPC]].Img[(int)num];
+        return CharSprites[DaysOrder[CurrentDay][CurrentNPC]].Img[(int)num];
     }
 }

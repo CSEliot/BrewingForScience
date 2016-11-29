@@ -104,9 +104,10 @@ public class LidMovement : MonoBehaviour {
     public void SetFillState(FillStates NewFill)
     {
         CurrFill = NewFill;
+        currHeight = (YMin + ((float)CurrFill * MovIncrement));
         transform.localPosition = new Vector3(
                     transform.localPosition.x,
-                    YMin + ((float)CurrFill * MovIncrement),
+                    currHeight,
                     transform.localPosition.z
         );
 

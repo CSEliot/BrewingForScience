@@ -5,13 +5,17 @@ public class LoadDay1 : MonoBehaviour {
 
     private int dayNum = -1;
 
-    public GameControls game;
+    public GameObject DayPanel;
+    public AudioManager MyAudio;
 
 	// Use this for initialization
 	void Awake () {
         dayNum++;
-        game.SpawnNPC();
-	}
+        DayPanel.SetActive(true);
+        MyAudio.MusicPlayer.Stop();
+        MyAudio.MusicPlayer.clip = MyAudio.Musics[0];
+        MyAudio.MusicPlayer.Play();
+    }
 	
 	// Update is called once per frame
 	void Update () {

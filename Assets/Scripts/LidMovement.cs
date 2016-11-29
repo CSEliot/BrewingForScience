@@ -29,7 +29,9 @@ public class LidMovement : MonoBehaviour {
     // Use this for initialization
     void Start () {
         MovIncrement = Mathf.Abs((YMax - YMin) / totalStates);
-	}
+        currHeight = YMin;
+
+    }
 	
 	// Update is called once per frame
 	void Update () {

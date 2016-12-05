@@ -200,8 +200,10 @@ public class GameControls : MonoBehaviour {
         if (!QuestionAsked)
             return;
 
-        MaxSpd = Mathf.Pow(Days[CurrentDay][CurrentNPC].MaxTemp, 2);
-        MinSpd = Mathf.Pow(Days[CurrentDay][CurrentNPC].MinTemp, 2);
+        Parts.UpdateAvgSpd();
+
+        MaxSpd = Days[CurrentDay][CurrentNPC].MaxTemp;
+        MinSpd = Days[CurrentDay][CurrentNPC].MinTemp;
         MinVol = volHeights[(int)Days[CurrentDay][CurrentNPC].MinVol];
         MaxVol = volHeights[(int)Days[CurrentDay][CurrentNPC].MaxVol];
         InMinSpd = Parts.AvgSpd >= MinSpd;

@@ -1,0 +1,3 @@
+Brotli Compile time: 7.5 Minutes. But went easier on the CPU. In addition, compressed size is 15.9MB (Size on Disk).
+
+GZip Compile time: 1.5 Minutes. Harder on the CPU. In addition, compressed size is 18.2MB (Size on Disk).

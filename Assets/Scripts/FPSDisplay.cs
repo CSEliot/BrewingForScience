@@ -17,7 +17,5 @@ public class FPSDisplay : MonoBehaviour
         fps = 1.0f / deltaTime;
         targetText.text = "  " + fps;
         //string text = string.Format("{0:0.0} ms ({1:0.} fps)", msec, fps);
-        //CBUG.ClearLines(-1);
-        //CBUG.Do(text);
     }
 }

@@ -36,6 +36,7 @@ public class PartMan : MonoBehaviour
     private float heatUpRate;
     private float minHeatUpRate;
     private const int heatUpStates = 5;
+    private ParticleSystem.MainModule mainPartSys;
     #endregion
 
     #region Test VARS
@@ -44,32 +45,33 @@ public class PartMan : MonoBehaviour
     private float totalSpd = 0f;
     private float totalSamples = 0f;
     #endregion
-    
+
     // Use this for initialization
     void Start()
     {
         PartSys = GetComponent<ParticleSystem>();
-        partArray = new ParticleSystem.Particle[PartSys.maxParticles];
-        PartSys.startSpeed = StartSpeed;
+        partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
+        mainPartSys = PartSys.main; 
+        mainPartSys.startSpeed = StartSpeed;
         heatUpRate = MaxSecondsPerHeatUp;
         minHeatUpRate = MaxSecondsPerHeatUp - (DeltaHeatUpRate * (float)(heatUpStates));
-        if(minHeatUpRate < 0) {
+        if (minHeatUpRate < 0) {
             CBUG.SrsError("MIN HEAT RATE TOO LOW, LOWER DELTA or RAISE MAXSECONDS: " + minHeatUpRate);
         }
-        avgSpd = PartSys.startSpeed * PartSys.startSpeed;
+        avgSpd = mainPartSys.startSpeed.constant * mainPartSys.startSpeed.constant;
     }
-    
+
     // Update is called once per frame
     void FixedUpdate()
-    { 
+    {
 
-        if(Time.time - prevTime >= (heatUpRate + HeatUpRateMod) && heatUpRate < MaxSecondsPerHeatUp) {
+        if (Time.time - prevTime >= (heatUpRate + HeatUpRateMod) && heatUpRate < MaxSecondsPerHeatUp) {
             IncreaseSpeed();
             prevTime = Time.time;
         }
 
         //if (frameCt % 3 == 0) {
-        //    partArray = new ParticleSystem.Particle[PartSys.maxParticles];
+        //    partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
         //    partArrayLen = PartSys.GetParticles(partArray);
         //    if (partArrayLen <= 0)
         //        return;
@@ -86,7 +88,6 @@ public class PartMan : MonoBehaviour
     public void ClearParts()
     {
         PartSys.Clear();
-        PartSys.maxParticles = 0;
     }
 
     /// <summary>
@@ -104,47 +105,48 @@ public class PartMan : MonoBehaviour
     /// <param name="count">Amount of particles to delete.</param>
     private void deleteMultiple(int count)
     {
-        partArray = new ParticleSystem.Particle[PartSys.maxParticles];
+        partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
         partArrayLen = PartSys.GetParticles(partArray);
         //Edge Case: get told to delete more than exists.
         count = partArrayLen < count ? partArrayLen : count;
         for (int x = 0; x < count; x++) {
             //Yes, the same particle may be marked for deletion multiple times.
             //Unless I find a simple way to guarantee different random integers, this will suffice.
-            partArray[Random.Range(0, partArrayLen)].lifetime = 0;
-            PartSys.maxParticles--;
+            partArray[Random.Range(0, partArrayLen)].remainingLifetime = 0;
         }
         PartSys.SetParticles(partArray, partArrayLen);
-        if (PartSys.maxParticles <= 0) {
+        if (PartSys.main.maxParticles <= 0) {
             PartSys.Clear();
         }
     }
 
     public void AddParts()
     {
-        int tempAmt = PartSys.maxParticles - (PartSys.maxParticles / PartsPerState) * PartsPerState;
+        int tempAmt = PartSys.main.maxParticles - (PartSys.main.maxParticles / PartsPerState) * PartsPerState;
         tempAmt = PartsPerState - tempAmt;
-        PartSys.maxParticles += tempAmt;
         PartSys.Emit(tempAmt);
+    }
+
+    public void FixParts()
+    {
+
     }
 
     public void IncreaseSpeed()
     {
         //if (CurrSpeed + SpeedScale > MaxSpeed)
         //    return;
-        partArray = new ParticleSystem.Particle[PartSys.maxParticles];
+        partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
         partArrayLen = PartSys.GetParticles(partArray);
-        IsBoiling = !(PartSys.maxParticles == 0);
-        totalSpd = 0;
+        IsBoiling = !(PartSys.main.maxParticles == 0);
         for (int x = 0; x < partArrayLen; x++) {
             partArray[x].velocity = new Vector3(
                 partArray[x].velocity.x * SpeedScale,
                 partArray[x].velocity.y * SpeedScale,
                 0f
             );
-            totalSpd += partArray[x].velocity.sqrMagnitude;
         }
-        avgSpd = totalSpd / partArrayLen;
+        UpdateAvgSpd();
         if (avgSpd < BoilPoint) {
             IsBoiling = false;
         }
@@ -157,6 +159,26 @@ public class PartMan : MonoBehaviour
         //    //Lifetime used here to change sprite in particle.
         //}
         PartSys.SetParticles(partArray, partArrayLen);
+    }
+
+    public void UpdateAvgSpd()
+    {
+        partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
+        partArrayLen = PartSys.GetParticles(partArray);
+        totalSpd = 0;
+        for (int x = 0; x < partArrayLen; x++) {
+            totalSpd += partArray[x].velocity.sqrMagnitude;
+        }
+        avgSpd = totalSpd / partArrayLen;
+        //for (int x = 0; x < partArrayLen; x++) {
+        //if (IsBoiling)
+        //    partArray[x].lifetime = partArray[x].startLifetime / 2;
+        //else {
+        //    partArray[x].lifetime = partArray[x].startLifetime;
+        //}
+        //    //Lifetime used here to change sprite in particle.
+        //}
+        //PartSys.SetParticles(partArray, partArrayLen);
     }
 
     public void IncreaseRate()
@@ -175,7 +197,7 @@ public class PartMan : MonoBehaviour
 
     public void DecreaseSpeed()
     {
-        partArray = new ParticleSystem.Particle[PartSys.maxParticles];
+        partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
         partArrayLen = PartSys.GetParticles(partArray);
         for (int x = 0; x < partArrayLen; x++) {
             partArray[x].velocity = new Vector3(
@@ -207,9 +229,9 @@ public class PartMan : MonoBehaviour
 
     public void CalculateAvgSpeed()
     {
-        partArray = new ParticleSystem.Particle[PartSys.maxParticles];
+        partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
         partArrayLen = PartSys.GetParticles(partArray);
-        //IsBoiling = !(PartSys.maxParticles == 0);
+        //IsBoiling = !(PartSys.main.maxParticles == 0);
         totalSpd = 0;
         for (int x = 0; x < partArrayLen; x++) {
             totalSpd += partArray[x].velocity.sqrMagnitude;

@@ -8,6 +8,7 @@ syntax: glob
 *.suo
 *.unityproj
 *.bin
+*.zip
  
 Assets\Notes.txt.meta.orig.meta
 Assets\StreamingAssets\build_info.txt

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using LoLSDK;
 using System.Collections;
 
 /// <summary>
@@ -37,6 +38,8 @@ public class GameControls : MonoBehaviour {
     private float[] volHeights;
 
     public bool QuestionAsked = false;
+
+    public QuizMan Quiz;
 
     [System.Serializable]
     public struct NPC
@@ -78,7 +81,7 @@ public class GameControls : MonoBehaviour {
     public NPC[] Day1;
     public NPC[] Day2;
     public NPC[] Day3;
-    private NPC[][] Days;
+    private NPC[][] days;
     
     private int[][] DaysOrder;
 
@@ -98,13 +101,26 @@ public class GameControls : MonoBehaviour {
 
     public int TotalCharactersPerDay;
 
+    public bool IsPaused;
+
+    public int MaxProgress;
+    public int CurrentProgress;
+    public int CurrentScore;
+
     // Use this for initialization
     void Start () {
+
+        IsPaused = false;
+
+        LOLSDK.Init("com.kiteliongames.brewcoffee");
+        LOLSDK.Instance.SubmitProgress(0, 0, MaxProgress);
 
         volHeights = new float[] {-1f, -0.03f, 0.7f, 1.43f, 2.16f, 2.89f, 3.62f, 5f};
 
         CurrentDay = 0;
         CurrentNPC = -1;
+        CurrentProgress = 0;
+        CurrentScore = 0;
 
         DaysOrder = new int[][] {
             new int[5] { 0, 1, 2, 3, 4 },
@@ -112,7 +128,7 @@ public class GameControls : MonoBehaviour {
             new int[5] { 2, 0, 4, 1, 3 }
         };
 
-        Days = new NPC[3][] { Day1, Day2, Day3 };
+        days = new NPC[3][] { Day1, Day2, Day3 };
         
         for (int x = 0; x < NPC_Line.Length; x++) {
             NPC_Line[x].sprite = CharSprites[DaysOrder[CurrentDay][x]].Img[2];
@@ -125,6 +141,9 @@ public class GameControls : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+
+        if (IsPaused)
+            return;
 
         if (Parts.IsBoiling && !Smoke.isPlaying) {
             Smoke.Play();
@@ -174,12 +193,18 @@ public class GameControls : MonoBehaviour {
     {
         //Set question
         SpeechBubble.SetActive(true);
-        SpeechBubble.GetComponentInChildren<Text>().text = Days[CurrentDay][CurrentNPC].Request;
+        SpeechBubble.GetComponentInChildren<Text>().text = days[CurrentDay][CurrentNPC].Request;
 
         QuestionAsked = true;
 
-        if (Days[CurrentDay][CurrentNPC].IsQuizGuy) {
+        if (days[CurrentDay][CurrentNPC].IsQuizGuy) {
+            Smoke.Pause();
+            Parts.PartSys.Pause();
+            IsPaused = true;
+            Parts.IsPaused = true;
 
+            //CALL PARTS INIT
+            Quiz.Init();
         }
     }
 
@@ -202,17 +227,17 @@ public class GameControls : MonoBehaviour {
 
         Parts.UpdateAvgSpd();
 
-        MaxSpd = Days[CurrentDay][CurrentNPC].MaxTemp;
-        MinSpd = Days[CurrentDay][CurrentNPC].MinTemp;
-        MinVol = volHeights[(int)Days[CurrentDay][CurrentNPC].MinVol];
-        MaxVol = volHeights[(int)Days[CurrentDay][CurrentNPC].MaxVol];
+        MaxSpd = days[CurrentDay][CurrentNPC].MaxTemp;
+        MinSpd = days[CurrentDay][CurrentNPC].MinTemp;
+        MinVol = volHeights[(int)days[CurrentDay][CurrentNPC].MinVol];
+        MaxVol = volHeights[(int)days[CurrentDay][CurrentNPC].MaxVol];
         InMinSpd = Parts.AvgSpd >= MinSpd;
         InMaxSpd = Parts.AvgSpd <= MaxSpd;
         InMinVol = Lid.CurrHeight >= MinVol;
         InMaxVol = Lid.CurrHeight <= MaxVol;
 
         if ( InMinSpd && InMaxSpd && InMinVol && InMaxVol ) {
-            SpeechBubble.GetComponentInChildren<Text>().text = Days[CurrentDay][CurrentNPC].Thanks;
+            SpeechBubble.GetComponentInChildren<Text>().text = days[CurrentDay][CurrentNPC].Thanks;
             //animate leaving
             FrontChar.SetTrigger("WalkOut");
             //fade
@@ -221,8 +246,10 @@ public class GameControls : MonoBehaviour {
             //check somewhere to go to next day
             //ClearCoffee();
             QuestionAsked = false;
+            CurrentProgress++;
+            UpdateCurrentProgress();
         } else {
-            SpeechBubble.GetComponentInChildren<Text>().text = Days[CurrentDay][CurrentNPC].Anger;
+            SpeechBubble.GetComponentInChildren<Text>().text = days[CurrentDay][CurrentNPC].Anger;
             //ClearCoffee();
         }
     }
@@ -300,4 +327,26 @@ public class GameControls : MonoBehaviour {
     {
         return CharSprites[DaysOrder[CurrentDay][CurrentNPC]].Img[(int)num];
     }
+
+    public void GameComplete()
+    {
+        LOLSDK.Instance.CompleteGame();
+    }
+
+    public void UpdateCurrentProgress()
+    {
+        LOLSDK.Instance.SubmitProgress(CurrentScore, CurrentProgress, MaxProgress);
+    }
+
+    public void SetAnswer(bool isCorrect)
+    {
+
+    }
+
+    public NPC[][] Days {
+        get {
+            return days;
+        }
+    }
+
 }

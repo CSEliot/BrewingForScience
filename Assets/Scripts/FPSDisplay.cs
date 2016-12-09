@@ -8,8 +8,12 @@ public class FPSDisplay : MonoBehaviour
     private float fps;
     public Text targetText;
 
+    public bool DisplayOnOfficial;
+
     void Update()
     {
+        if (!(Debug.isDebugBuild && DisplayOnOfficial))
+            return;
 
         //Method obtained from: http://wiki.unity3d.com/index.php?title=FramesPerSecond&oldid=18981
         deltaTime += (Time.deltaTime - deltaTime) * 0.1f;

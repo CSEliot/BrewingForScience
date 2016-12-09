@@ -10,9 +10,11 @@ public class AudioManager : MonoBehaviour {
     public AudioClip[] Sfxs;
 
 
+    public string[] MscNames;
+
 	// Use this for initialization
 	void Start () {
-	
+        gameObject.tag = "AudioMan";	
 	}
 	
 	// Update is called once per frame
@@ -35,6 +37,8 @@ public class AudioManager : MonoBehaviour {
         MusicPlayer.Stop();
         MusicPlayer.clip = Musics[musicNum];
         MusicPlayer.Play();
+        Debug.Log("AUdio name?: " + Musics[musicNum].name);
+        //LOLSDK.Instance.PlaySound(Musics[musicNum].name
     }
 
     private void _PlayS(int sfxNum)
@@ -42,10 +46,16 @@ public class AudioManager : MonoBehaviour {
         SfxPlayer.Stop();
         SfxPlayer.clip = Sfxs[sfxNum];
         SfxPlayer.Play();
+
     }
 
     public static AudioManager GetRef()
     {
         return GameObject.FindGameObjectWithTag("AudioMan").GetComponent<AudioManager>();
+    }
+
+    public static string GetMscName(int musicNum)
+    {
+        return GetRef().MscNames[musicNum];
     }
 }

@@ -13,8 +13,6 @@ public class PartMan : MonoBehaviour
     #region Controls behavior
     [Tooltip("How many particles per volume of coffee")]
     public int PartsPerState;
-    [Tooltip("Starting speed of particles")]
-    public int StartSpeed;
     [Tooltip("Multiplicative speed applied to particles every DeltaHeatUpRate")]
     public float SpeedScale;
     [Tooltip("If all particles are above this point, boiling occurs")]
@@ -42,17 +40,23 @@ public class PartMan : MonoBehaviour
     #region Test VARS
     private float prevTime;
     private float avgSpd = 0f;
+    private float lowestSpd = 0f;
     private float totalSpd = 0f;
     private float totalSamples = 0f;
+    private float tempSpd = 0f;
     #endregion
+
+    public bool IsPaused;
 
     // Use this for initialization
     void Start()
     {
+
+        IsPaused = false;
+
         PartSys = GetComponent<ParticleSystem>();
         partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
-        mainPartSys = PartSys.main; 
-        mainPartSys.startSpeed = StartSpeed;
+        mainPartSys = PartSys.main;
         heatUpRate = MaxSecondsPerHeatUp;
         minHeatUpRate = MaxSecondsPerHeatUp - (DeltaHeatUpRate * (float)(heatUpStates));
         if (minHeatUpRate < 0) {
@@ -64,6 +68,9 @@ public class PartMan : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+
+        if (IsPaused)
+            return;
 
         if (Time.time - prevTime >= (heatUpRate + HeatUpRateMod) && heatUpRate < MaxSecondsPerHeatUp) {
             IncreaseSpeed();
@@ -95,7 +102,7 @@ public class PartMan : MonoBehaviour
     /// </summary>
     public void DeleteParts(int amt)
     {
-        int tempAmt = amt <= 0 ? PartsPerState : amt;
+        int tempAmt = amt <= 0 ? PartsPerState - 1 : amt;
         deleteMultiple(tempAmt);
     }
 
@@ -163,11 +170,22 @@ public class PartMan : MonoBehaviour
 
     public void UpdateAvgSpd()
     {
-        partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
-        partArrayLen = PartSys.GetParticles(partArray);
+        //partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
+        //partArrayLen = PartSys.GetParticles(partArray);
         totalSpd = 0;
+        lowestSpd = 10000f;
+
+        if(partArrayLen == 0) {
+            avgSpd = 0;
+            return;
+        }
+
+
         for (int x = 0; x < partArrayLen; x++) {
-            totalSpd += partArray[x].velocity.sqrMagnitude;
+            tempSpd = partArray[x].velocity.sqrMagnitude;
+            totalSpd += tempSpd;
+            if (lowestSpd > tempSpd)
+                lowestSpd = tempSpd;
         }
         avgSpd = totalSpd / partArrayLen;
         //for (int x = 0; x < partArrayLen; x++) {

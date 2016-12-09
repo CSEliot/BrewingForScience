@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using LoLSDK;
 using System.Collections;
 
 public class LoadDay1 : MonoBehaviour {
@@ -12,9 +13,10 @@ public class LoadDay1 : MonoBehaviour {
 	void Awake () {
         dayNum++;
         DayPanel.SetActive(true);
-        MyAudio.MusicPlayer.Stop();
-        MyAudio.MusicPlayer.clip = MyAudio.Musics[0];
-        MyAudio.MusicPlayer.Play();
+        //MyAudio.MusicPlayer.Stop();
+        //MyAudio.MusicPlayer.clip = MyAudio.Musics[0];
+        //MyAudio.MusicPlayer.Play();
+        LOLSDK.Instance.PlaySound(AudioManager.GetMscName(0), true, true);
     }
 	
 	// Update is called once per frame

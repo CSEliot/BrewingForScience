@@ -222,7 +222,7 @@ public class GameControls : MonoBehaviour {
 
     public void Serve()
     {
-        if (!QuestionAsked)
+        if (!QuestionAsked || days[CurrentDay][CurrentNPC].IsQuizGuy)
             return;
 
         Parts.UpdateAvgSpd();

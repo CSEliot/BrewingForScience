@@ -128,11 +128,10 @@ public class QuizMan : MonoBehaviour {
     {
         currentSet++;
 
-        QPanel.SetActive(true);
         quizAnim.SetTrigger("Quiz");
         QuestionBox.text = Quizzes[currentSet].Question;
         if(Quizzes[currentSet].Img == null) {
-            QuizImg.color = new Color(1f, 1f, 1f, 0f);
+              QuizImg.color = new Color(1f, 1f, 1f, 0f);
         }else {
             QuizImg.sprite = Quizzes[currentSet].Img;
         }
@@ -161,5 +160,32 @@ public class QuizMan : MonoBehaviour {
         //}
     }
 
+    private IEnumerator SetStemImage(string url)
+    {
+        // Start a download of the given URL
+        var www = new WWW(url);
+        // wait until the download is done
+        yield return www;
+        // Create a texture in DXT1 format
+        Texture2D texture = new Texture2D(www.texture.width, www.texture.height, TextureFormat.DXT1, false);
 
+        // assign the downloaded image to sprite
+        www.LoadImageIntoTexture(texture);
+        Rect rec = new Rect(0, 0, texture.width, texture.height);
+        Sprite spriteToUse = Sprite.Create(texture, rec, new Vector2(0.5f, 0.5f), 100);
+        stemImage.sprite = spriteToUse;
+
+        LayoutElement l_element = stemImage.GetComponent<LayoutElement>();
+        if (texture.width > texture.height) {
+            l_element.preferredWidth = texture.width;
+            l_element.minHeight = texture.height;
+        } else {
+            l_element.minWidth = texture.width;
+            l_element.preferredHeight = texture.height;
+        }
+
+
+        www.Dispose();
+        www = null;
+    }
 }

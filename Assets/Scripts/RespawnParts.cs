@@ -38,7 +38,7 @@ public class RespawnParts : MonoBehaviour {
         }
         
         ParticleSystem.EmitParams pt = new ParticleSystem.EmitParams();
-        xVal = parts.AvgSpd / 2.82842712f;
+        xVal = parts.SqrAvgSpd / 2.82842712f;
         pt.velocity = new Vector3(xVal, -xVal - 0.1f, 0f);
         partSys.Emit(pt, totalExitted + 2);
 

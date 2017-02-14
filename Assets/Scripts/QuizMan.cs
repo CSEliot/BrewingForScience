@@ -20,7 +20,7 @@ public class QuizMan : MonoBehaviour {
         public string[] Answers;
         public string CorrectAnswer_ID;
         public int TotalQs;
-        public Sprite Img;
+        public Image Img;
     }
 
     public Quiz[] Quizzes;
@@ -93,7 +93,7 @@ public class QuizMan : MonoBehaviour {
             WWW www = new WWW(URL);
             yield return www;
             if (!string.IsNullOrEmpty(www.error)) {
-               Quizzes[quizNum].Img = Sprite.Create(www.texture, new Rect(0, 0, www.texture.width, www.texture.height), new Vector2(0, 0));
+                StartCoroutine(SetStemImage(URL, Quizzes[quizNum].Img));
             }
         }
     }
@@ -133,7 +133,7 @@ public class QuizMan : MonoBehaviour {
         if(Quizzes[currentSet].Img == null) {
               QuizImg.color = new Color(1f, 1f, 1f, 0f);
         }else {
-            QuizImg.sprite = Quizzes[currentSet].Img;
+            QuizImg.sprite = Quizzes[currentSet].Img.sprite;
         }
         for (int x = 0; x < AnswerBoxes.Length; x++) {
             AnswerBoxes[x].text = Quizzes[currentSet].Answers[x];
@@ -160,7 +160,7 @@ public class QuizMan : MonoBehaviour {
         //}
     }
 
-    private IEnumerator SetStemImage(string url)
+    private IEnumerator SetStemImage(string url, Image img)
     {
         // Start a download of the given URL
         var www = new WWW(url);
@@ -173,13 +173,16 @@ public class QuizMan : MonoBehaviour {
         www.LoadImageIntoTexture(texture);
         Rect rec = new Rect(0, 0, texture.width, texture.height);
         Sprite spriteToUse = Sprite.Create(texture, rec, new Vector2(0.5f, 0.5f), 100);
-        stemImage.sprite = spriteToUse;
+        img.sprite = spriteToUse;
 
-        LayoutElement l_element = stemImage.GetComponent<LayoutElement>();
-        if (texture.width > texture.height) {
+        LayoutElement l_element = img.GetComponent<LayoutElement>();
+        if (texture.width > texture.height) 
+        {
             l_element.preferredWidth = texture.width;
             l_element.minHeight = texture.height;
-        } else {
+        }
+        else
+        {
             l_element.minWidth = texture.width;
             l_element.preferredHeight = texture.height;
         }

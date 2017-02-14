@@ -314,6 +314,7 @@ public class PartMan : MonoBehaviour
         if (CanBoil)
         {
             IsBoiling = true;
+            Tips.Spawn(0);
         }
         isBuffered = false;
     }

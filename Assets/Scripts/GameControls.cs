@@ -172,6 +172,7 @@ public class GameControls : MonoBehaviour {
             CurrentNPC = 0;
             CurrentDay++;
             if(CurrentDay == 3) {
+                Tips.Spawn(3);
                 EndGamePanel.SetActive(true);
                 return;
             }
@@ -186,8 +187,6 @@ public class GameControls : MonoBehaviour {
             NPC_Line[x - CurrentNPC - 1].sprite = CharSprites[DaysOrder[CurrentDay][x]].Img[2];
         }
         FrontChar.SetTrigger("WalkIn");
-        //DO IF IS QUIZ GUY CHECK
-        //DO if is end of day check
     }
 
     public void SetRequest()
@@ -310,6 +309,7 @@ public class GameControls : MonoBehaviour {
     {
         if (currentTemp >= MaxTemp) {
             HeatControls.SetActive(false);
+            Tips.Spawn(1);
         } else {
             CoolControls.SetActive(true);
             currentTemp++;
@@ -321,6 +321,7 @@ public class GameControls : MonoBehaviour {
     {
         if(currentTemp <= 0) {
             CoolControls.SetActive(false);
+            Tips.Spawn(4);
         } else {
             HeatControls.SetActive(true);
             currentTemp--;

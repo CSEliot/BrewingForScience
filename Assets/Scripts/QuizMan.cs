@@ -191,4 +191,21 @@ public class QuizMan : MonoBehaviour {
         www.Dispose();
         www = null;
     }
+
+    private IEnumerator LoadImage()
+    {
+        Texture2D temp = new Texture2D(0, 0);
+        WWW www = new WWW("imageurl");
+
+        // Wait for download to complete
+        yield return www;
+
+        GameObject go = GameObject.Find("StemImage");
+        go.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+        GameObject imageTarget = GameObject.Find("StemImage");
+        temp = www.texture;
+        Sprite sprite = Sprite.Create(temp, new Rect(0, 0, temp.width, temp.height), new Vector2(0.5f, 0.5f));
+        Transform thumb = imageTarget.transform;
+        thumb.GetComponent<Image>().sprite = sprite;
+    }
 }

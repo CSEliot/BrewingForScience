@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System.Collections;
 
 /// <summary>
 /// All particle system controls for Brewing For Science game.
@@ -9,6 +10,7 @@ public class PartMan : MonoBehaviour
 {
 
     public LidMovement Lid;
+    private WaitForSeconds boilBuffer;
 
     #region Controls behavior
     [Tooltip("How many particles per volume of coffee")]
@@ -23,6 +25,9 @@ public class PartMan : MonoBehaviour
     public float DeltaHeatUpRate;
     public float MaxSecondsPerHeatUp;
     public bool IsBoiling;
+    public bool CanBoil;
+    [Tooltip("Buffer time is how long at Max Temp before Boiling starts.")]
+    public float BoilBufferTime;
     [Tooltip("Alters heatup rate based on volume of liquid")]
     public float HeatUpRateMod;
     #endregion
@@ -37,9 +42,13 @@ public class PartMan : MonoBehaviour
     private ParticleSystem.MainModule mainPartSys;
     #endregion
 
-    #region Test VARS
+    #region Private Pre-Boil Buffer Vars
+    private bool isBuffered;
+    #endregion
+
+    #region Particle State Sampling Vars
     private float prevTime;
-    private float avgSpd = 0f;
+    private float sqrAvgSpd = 0f;
     private float lowestSpd = 0f;
     private float totalSpd = 0f;
     private float totalSamples = 0f;
@@ -48,9 +57,17 @@ public class PartMan : MonoBehaviour
 
     public bool IsPaused;
 
+    //Testing ...
+    private int targetSqrAvgSpd;
+    public float HeatRateModStatic; //Static is a word which here means, unchanged by code.
+
     // Use this for initialization
     void Start()
     {
+        CanBoil = false;
+        boilBuffer = new WaitForSeconds(BoilBufferTime);
+
+        targetSqrAvgSpd = 0;
 
         IsPaused = false;
 
@@ -62,7 +79,7 @@ public class PartMan : MonoBehaviour
         if (minHeatUpRate < 0) {
             CBUG.SrsError("MIN HEAT RATE TOO LOW, LOWER DELTA or RAISE MAXSECONDS: " + minHeatUpRate);
         }
-        avgSpd = mainPartSys.startSpeed.constant * mainPartSys.startSpeed.constant;
+        sqrAvgSpd = mainPartSys.startSpeed.constant * mainPartSys.startSpeed.constant;
     }
 
     // Update is called once per frame
@@ -71,10 +88,15 @@ public class PartMan : MonoBehaviour
 
         if (IsPaused)
             return;
-
-        if (Time.time - prevTime >= (heatUpRate + HeatUpRateMod) && heatUpRate < MaxSecondsPerHeatUp) {
+        //&& heatUpRate < MaxSecondsPerHeatUp
+        if (Time.time - prevTime >= (heatUpRate + HeatUpRateMod + HeatRateModStatic) ) {
             IncreaseSpeed();
             prevTime = Time.time;
+        }
+
+        if (CanBoil && !isBuffered && !IsBoiling)
+        {
+            StartCoroutine(StartBoilBuffer());
         }
 
         //if (frameCt % 3 == 0) {
@@ -145,24 +167,39 @@ public class PartMan : MonoBehaviour
         //    return;
         partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
         partArrayLen = PartSys.GetParticles(partArray);
-        IsBoiling = !(PartSys.main.maxParticles == 0);
-        for (int x = 0; x < partArrayLen; x++) {
-            partArray[x].velocity = new Vector3(
-                partArray[x].velocity.x * SpeedScale,
-                partArray[x].velocity.y * SpeedScale,
-                0f
-            );
-        }
+        CanBoil = !(PartSys.main.maxParticles == 0);
+
         UpdateAvgSpd();
-        if (avgSpd < BoilPoint) {
-            IsBoiling = false;
+
+        for (int x = 0; x < partArrayLen; x++)
+        {
+            if(partArray[x].velocity.sqrMagnitude > sqrAvgSpd)
+            {
+                partArray[x].velocity = new Vector3(
+                    partArray[x].velocity.x / SpeedScale,
+                    partArray[x].velocity.y / SpeedScale,
+                    0f
+                );
+            }
+            else
+            {
+                partArray[x].velocity = new Vector3(
+                    partArray[x].velocity.x * SpeedScale,
+                    partArray[x].velocity.y * SpeedScale,
+                    0f
+                );
+            }
+        }
+        if (sqrAvgSpd < BoilPoint)
+        {
+            CanBoil = false;
         }
         //for (int x = 0; x < partArrayLen; x++) {
-            //if (IsBoiling)
-            //    partArray[x].lifetime = partArray[x].startLifetime / 2;
-            //else {
-            //    partArray[x].lifetime = partArray[x].startLifetime;
-            //}
+        //if (IsBoiling)
+        //    partArray[x].lifetime = partArray[x].startLifetime / 2;
+        //else {
+        //    partArray[x].lifetime = partArray[x].startLifetime;
+        //}
         //    //Lifetime used here to change sprite in particle.
         //}
         PartSys.SetParticles(partArray, partArrayLen);
@@ -176,10 +213,9 @@ public class PartMan : MonoBehaviour
         lowestSpd = 10000f;
 
         if(partArrayLen == 0) {
-            avgSpd = 0;
+            sqrAvgSpd = 0;
             return;
         }
-
 
         for (int x = 0; x < partArrayLen; x++) {
             tempSpd = partArray[x].velocity.sqrMagnitude;
@@ -187,7 +223,7 @@ public class PartMan : MonoBehaviour
             if (lowestSpd > tempSpd)
                 lowestSpd = tempSpd;
         }
-        avgSpd = totalSpd / partArrayLen;
+        sqrAvgSpd = (totalSpd / partArrayLen) + targetSqrAvgSpd;
         //for (int x = 0; x < partArrayLen; x++) {
         //if (IsBoiling)
         //    partArray[x].lifetime = partArray[x].startLifetime / 2;
@@ -199,30 +235,39 @@ public class PartMan : MonoBehaviour
         //PartSys.SetParticles(partArray, partArrayLen);
     }
 
+    /// <summary>
+    /// Cooling Down
+    /// </summary>
     public void IncreaseRate()
     {
         if (heatUpRate > MaxSecondsPerHeatUp)
             return;
-        heatUpRate += DeltaHeatUpRate; 
+        heatUpRate += DeltaHeatUpRate;
+        targetSqrAvgSpd--;
     }
 
+    /// <summary>
+    /// Heating Up
+    /// </summary>
     public void DecreaseRate()
     {
         if (heatUpRate < minHeatUpRate)
             return;
         heatUpRate -= DeltaHeatUpRate;
+        targetSqrAvgSpd++;
     }
 
     public void DecreaseSpeed()
     {
         partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
         partArrayLen = PartSys.GetParticles(partArray);
-        for (int x = 0; x < partArrayLen; x++) {
+        for (int x = 0; x < partArrayLen; x++)
+        {
             partArray[x].velocity = new Vector3(
                 partArray[x].velocity.x / SpeedScale,
                 partArray[x].velocity.y / SpeedScale,
                 0f
-            );  
+            );
         }
         PartSys.SetParticles(partArray, partArrayLen);
     }
@@ -239,9 +284,9 @@ public class PartMan : MonoBehaviour
         }
     }
 
-    public float AvgSpd {
+    public float SqrAvgSpd {
         get {
-            return avgSpd;
+            return sqrAvgSpd;
         }
     }
 
@@ -257,6 +302,20 @@ public class PartMan : MonoBehaviour
         //if (avgSpd < BoilPoint) {
         //    IsBoiling = false;
         //}
-        avgSpd = totalSpd / partArrayLen;
+        sqrAvgSpd = totalSpd / partArrayLen;
     }
+
+    #region Helper Functions
+    private IEnumerator StartBoilBuffer()
+    {
+        CBUG.Do("STARTING BOIL!!");
+        isBuffered = true;
+        yield return boilBuffer;
+        if (CanBoil)
+        {
+            IsBoiling = true;
+        }
+        isBuffered = false;
+    }
+    #endregion
 }

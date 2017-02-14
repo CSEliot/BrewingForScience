@@ -6,7 +6,7 @@ public class AudioManager : MonoBehaviour {
     public AudioSource MusicPlayer;
     public AudioSource SfxPlayer;
 
-    public AudioClip[] Musics;
+    public AudioClip[] Musics; 
     public AudioClip[] Sfxs;
 
 

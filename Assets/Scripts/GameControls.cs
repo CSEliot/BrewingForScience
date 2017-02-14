@@ -124,8 +124,8 @@ public class GameControls : MonoBehaviour {
 
         DaysOrder = new int[][] {
             new int[5] { 0, 1, 2, 3, 4 },
-            new int[5] { 4, 1, 3, 0, 2 },
-            new int[5] { 2, 0, 4, 1, 3 }
+            new int[5] { 0, 1, 2, 3, 4 },
+            new int[5] { 0, 1, 2, 3, 4 }
         };
 
         days = new NPC[3][] { Day1, Day2, Day3 };
@@ -158,6 +158,7 @@ public class GameControls : MonoBehaviour {
                 //Incremental volume lowering
                 if (Lid.SmoothEmpty(EvapoVolSpeed)) {
                     Parts.IsBoiling = false;
+                    Parts.CanBoil = false;
                 }
             }
         }
@@ -225,14 +226,14 @@ public class GameControls : MonoBehaviour {
         if (!QuestionAsked || days[CurrentDay][CurrentNPC].IsQuizGuy)
             return;
 
-        Parts.UpdateAvgSpd();
+        //Parts.UpdateAvgSpd();
 
         MaxSpd = days[CurrentDay][CurrentNPC].MaxTemp;
         MinSpd = days[CurrentDay][CurrentNPC].MinTemp;
         MinVol = volHeights[(int)days[CurrentDay][CurrentNPC].MinVol];
         MaxVol = volHeights[(int)days[CurrentDay][CurrentNPC].MaxVol];
-        InMinSpd = Parts.AvgSpd >= MinSpd;
-        InMaxSpd = Parts.AvgSpd <= MaxSpd;
+        InMinSpd = Parts.SqrAvgSpd >= MinSpd;
+        InMaxSpd = Parts.SqrAvgSpd <= MaxSpd;
         InMinVol = Lid.CurrHeight >= MinVol;
         InMaxVol = Lid.CurrHeight <= MaxVol;
 
@@ -278,6 +279,8 @@ public class GameControls : MonoBehaviour {
     {
         Parts.ClearParts();
         Lid.EmptyAll();
+        Parts.IsBoiling = false;
+        Parts.CanBoil = false;
     }
 
     public void IncreaseCoffee()
@@ -286,6 +289,7 @@ public class GameControls : MonoBehaviour {
             return;
         Parts.AddParts();
         Parts.IsBoiling = false;
+        Parts.CanBoil = false;
         Parts.HeatUpRateMod += HeatUpVolMod;
         Lid.FillSome();
     }
@@ -297,6 +301,7 @@ public class GameControls : MonoBehaviour {
         Parts.DeleteParts(0);
         Parts.HeatUpRateMod -= HeatUpVolMod;
         if(Lid.EmptySome()){
+            Parts.IsBoiling = false;
             Parts.IsBoiling = false;
         }
     }

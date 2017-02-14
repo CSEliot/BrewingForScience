@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class LidMovement : MonoBehaviour {
 
@@ -112,6 +113,7 @@ public class LidMovement : MonoBehaviour {
                     currHeight,
                     transform.localPosition.z
         );
+    
 
         //switch (CurrFill) {
         //    case FillStates.Empty:
@@ -160,5 +162,4 @@ public class LidMovement : MonoBehaviour {
         }
         return false;
     }
-
 }

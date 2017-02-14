@@ -57,4 +57,25 @@ public class PauseHandler : MonoBehaviour {
         }
 
     }
+
+    public void _PauseGame()
+    {
+        OnPauseStateChange(GameState.Paused);
+    }
+
+    public static void PauseGame()
+    {
+        GameObject.FindGameObjectWithTag("Pause").GetComponent<PauseHandler>()._PauseGame();
+    }
+
+    public void _UnpauseGame()
+    {
+        OnPauseStateChange(GameState.Resumed);
+    }
+
+    public static void UnpauseGame()
+    {
+        GameObject.FindGameObjectWithTag("Pause").GetComponent<PauseHandler>()._UnpauseGame();
+    }
+
 }

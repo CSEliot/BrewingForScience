@@ -31,7 +31,6 @@ public class LidMovement : MonoBehaviour {
     void Start () {
         MovIncrement = Mathf.Abs((YMax - YMin) / totalStates);
         currHeight = YMin;
-
     }
 	
 	// Update is called once per frame
@@ -43,7 +42,10 @@ public class LidMovement : MonoBehaviour {
     public void FillSome()
     {
         if (transform.localPosition.y + 1f > YMax)
+        {
+            Tips.Spawn(2);
             return;
+        }
         CurrFill++;
         currHeight = (YMin + ((float)CurrFill * MovIncrement));
         

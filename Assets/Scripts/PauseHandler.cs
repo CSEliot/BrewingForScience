@@ -9,7 +9,7 @@ public class PauseHandler : MonoBehaviour {
     public ParticleSystem EvapGas;
     public ParticleSystem PartSys;
     public PartMan PartM;
-    public GameControls GCont;
+    private GameControls gCont;
     public GameObject UIOverlay;
 
     //TODO: PAUSE AUDIO
@@ -17,6 +17,9 @@ public class PauseHandler : MonoBehaviour {
 
     // Use this for initialization
     void Start() {
+
+        gCont = GameControls.GetSelf();
+
         LOLSDK.Instance.GameStateChanged += new GameStateChangedHandler(this.OnPauseStateChange);
     }
 
@@ -34,7 +37,7 @@ public class PauseHandler : MonoBehaviour {
                 EvapGas.Pause();
                 //Pause heatup
                 PartM.IsPaused = true;
-                GCont.IsPaused = true;
+                gCont.IsPaused = true;
                 //disable all buttons
                 UIOverlay.SetActive(true);
                 //LOLSDK.Instance.
@@ -46,7 +49,7 @@ public class PauseHandler : MonoBehaviour {
                 EvapGas.Play();
                 //unpause heatup
                 PartM.IsPaused = false;
-                GCont.IsPaused = false;
+                gCont.IsPaused = false;
                 //enable all buttons
                 UIOverlay.SetActive(false);
                 //TODO: UNPAUSE AUDIO

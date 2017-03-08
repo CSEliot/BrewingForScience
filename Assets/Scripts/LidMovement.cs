@@ -11,7 +11,7 @@ public class LidMovement : MonoBehaviour {
     private float currY;
 
     public PartMan Parts;
-    public GameControls GameCont;
+    private GameControls gameCont;
 
     public enum FillStates
     {
@@ -31,6 +31,7 @@ public class LidMovement : MonoBehaviour {
     void Start () {
         MovIncrement = Mathf.Abs((YMax - YMin) / totalStates);
         currHeight = YMin;
+        gameCont = GameControls.GetSelf();
     }
 	
 	// Update is called once per frame
@@ -151,7 +152,7 @@ public class LidMovement : MonoBehaviour {
         }
         if (transform.localPosition.y - amt < YMin + ((float)CurrFill * MovIncrement)) {
             CurrFill--;
-            Parts.HeatUpRateMod -= GameCont.HeatUpVolMod;
+            Parts.HeatUpRateMod -= gameCont.HeatUpVolMod;
         }
         
         transform.Translate(new Vector3(

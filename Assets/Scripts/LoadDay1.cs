@@ -17,6 +17,7 @@ public class LoadDay1 : MonoBehaviour {
         //MyAudio.MusicPlayer.clip = MyAudio.Musics[0];
         //MyAudio.MusicPlayer.Play();
         LOLSDK.Instance.PlaySound(AudioManager.GetMscName(0), true, true);
+        
     }
 	
 	// Update is called once per frame

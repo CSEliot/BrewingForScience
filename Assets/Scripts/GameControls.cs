@@ -11,7 +11,9 @@ public class GameControls : MonoBehaviour {
     public LidMovement Lid;
     public PartMan Parts;
 
+    public GameObject ServeBtn;
     public GameObject TempControls;
+    public GameObject HeatElementHighlight;
     public GameObject[] DayPanels;
     public GameObject EndGamePanel;
     public GameObject HeatControls;
@@ -167,16 +169,28 @@ public class GameControls : MonoBehaviour {
     public void SpawnNPC()
     {
         CurrentNPC++;
+        
 
         if(CurrentNPC >= TotalCharactersPerDay) {
             CurrentNPC = 0;
             CurrentDay++;
-            if(CurrentDay == 3) {
+
+            //if(CurrentDay < 2)
+            //{
+            //}
+
+            if(CurrentDay == 2)
+            {
                 Tips.Spawn(3);
+            }
+
+            if(CurrentDay == 3) {
+                
                 EndGamePanel.SetActive(true);
                 return;
             }
             TempControls.SetActive(true);
+            HeatElementHighlight.SetActive(true);
         }
 
         for (int x = 0; x < NPC_Line.Length; x++) {
@@ -187,6 +201,10 @@ public class GameControls : MonoBehaviour {
             NPC_Line[x - CurrentNPC - 1].sprite = CharSprites[DaysOrder[CurrentDay][x]].Img[2];
         }
         FrontChar.SetTrigger("WalkIn");
+        if(CurrentDay == 2 && CurrentNPC == 1)
+        {
+            Tips.Spawn(5);
+        }
     }
 
     public void SetRequest()
@@ -222,10 +240,14 @@ public class GameControls : MonoBehaviour {
 
     public void Serve()
     {
+        ServeBtn.SetActive(false);
         if (!QuestionAsked || days[CurrentDay][CurrentNPC].IsQuizGuy)
+        {
+            ServeBtn.SetActive(true);
             return;
+        }
 
-        //Parts.UpdateAvgSpd();
+        Parts.UpdateAvgSpd();
 
         MaxSpd = days[CurrentDay][CurrentNPC].MaxTemp;
         MinSpd = days[CurrentDay][CurrentNPC].MinTemp;
@@ -233,8 +255,9 @@ public class GameControls : MonoBehaviour {
         MaxVol = volHeights[(int)days[CurrentDay][CurrentNPC].MaxVol];
         InMinSpd = Parts.SqrAvgSpd >= MinSpd;
         InMaxSpd = Parts.SqrAvgSpd <= MaxSpd;
-        InMinVol = Lid.CurrHeight >= MinVol;
-        InMaxVol = Lid.CurrHeight <= MaxVol;
+        InMinVol = Lid.CurrHeight >= (MinVol - 0.5f); 
+        InMaxVol = Lid.CurrHeight <= (MaxVol + 0.5f);
+        //Added 0.5f for possible strange rounding errors in WebGL port.
 
         if ( InMinSpd && InMaxSpd && InMinVol && InMaxVol ) {
             SpeechBubble.GetComponentInChildren<Text>().text = days[CurrentDay][CurrentNPC].Thanks;
@@ -244,14 +267,22 @@ public class GameControls : MonoBehaviour {
             //FrontChar.set
             //spawn next
             //check somewhere to go to next day
-            //ClearCoffee();
+            ClearCoffee();
             QuestionAsked = false;
             CurrentProgress++;
             UpdateCurrentProgress();
         } else {
-            SpeechBubble.GetComponentInChildren<Text>().text = days[CurrentDay][CurrentNPC].Anger;
+            if(SpeechBubble.GetComponentInChildren<Text>().text == days[CurrentDay][CurrentNPC].Anger)
+            {
+                SpeechBubble.GetComponentInChildren<Text>().text = days[CurrentDay][CurrentNPC].Request;
+            }
+            else
+            {
+                SpeechBubble.GetComponentInChildren<Text>().text = days[CurrentDay][CurrentNPC].Anger;  
+            }
             //ClearCoffee();
         }
+        StartCoroutine(ReactiveServeButton());
     }
 
     /// <summary>
@@ -285,7 +316,10 @@ public class GameControls : MonoBehaviour {
     public void IncreaseCoffee()
     {
         if (Lid.CurrFill == LidMovement.FillStates.Large)
+        {
+            Tips.Spawn(2);
             return;
+        }
         Parts.AddParts();
         Parts.IsBoiling = false;
         Parts.CanBoil = false;
@@ -355,4 +389,24 @@ public class GameControls : MonoBehaviour {
         }
     }
 
+    public static GameControls GetSelf()
+    {
+        return GameObject.FindGameObjectWithTag("GameControls").GetComponent<GameControls>();
+    }
+
+    public static bool IsQuizTime()
+    {
+        return GameObject.FindGameObjectWithTag("GameControls").GetComponent<GameControls>().IsQuizTimeBool();
+    }
+
+    public bool IsQuizTimeBool()
+    {
+        return days[CurrentDay][CurrentNPC].IsQuizGuy;
+    }
+    
+    private IEnumerator ReactiveServeButton()
+    {
+        yield return new WaitForSeconds(1f);
+        ServeBtn.SetActive(true);
+    }
 }

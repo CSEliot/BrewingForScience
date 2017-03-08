@@ -1,0 +1,9 @@
+FIXES:
+
+- Fix tooltip spacing
+- something is covering the question box area
+there's a bug where the particles won't heat up ..... probably related to the tooltips.
+- optimze coffee resizing
+- make character failed response less misleading
+- Tooltip add: That thermal energy isn't exactly volume.
+- FIX THE FUCKING SUBMITPROGRESS SHIT U IDIOT

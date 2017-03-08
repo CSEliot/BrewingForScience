@@ -26,6 +26,7 @@ public class RespawnParts : MonoBehaviour {
 
     private void OnParticleTrigger()
     {
+        CBUG.Do("TEST PART COLLIDE");
         totalExitted = partSys.GetTriggerParticles(ParticleSystemTriggerEventType.Inside, outParts);
 
         if (totalExitted == 0)

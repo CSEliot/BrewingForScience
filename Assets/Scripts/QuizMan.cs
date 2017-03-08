@@ -6,7 +6,7 @@ using LoLSDK;
 
 public class QuizMan : MonoBehaviour {
 
-    public GameControls GCont;
+    private GameControls gCont;
 
     public GameObject[] QButtons;
     public GameObject QPanel;
@@ -19,28 +19,36 @@ public class QuizMan : MonoBehaviour {
         public string[] Answers_ID;
         public string[] Answers;
         public string CorrectAnswer_ID;
-        public int TotalQs;
-        public Image Img;
+        public int TotalAnswerChoices;
+        public string SpriteURL;
     }
 
-    public Quiz[] Quizzes;
+    private Quiz[] quizzes;
 
     public Text QuestionBox;
     public Text[] AnswerBoxes;
 
-    private int currentSet;
+    private int currentQuestion;
     private Animator quizAnim;
 
     public Image QuizImg;
+    public Sprite LoadingImg;
 
     private string[] alternativeIDs;
 
 	// Use this for initialization
 	void Start () {
-        currentSet = -1;
+
+        gCont = GameControls.GetSelf();
+
+        if (Application.isEditor)
+        {
+            testQuizFunctionality();
+        }
+
+        currentQuestion = -1;
         quizAnim = GetComponent<Animator>();
         LOLSDK.Instance.QuestionsReceived += new QuestionListReceivedHandler(GetQuestions);
-        GetQuestions(new MultipleChoiceQuestionList());
     }
 	
 	// Update is called once per frame
@@ -49,35 +57,52 @@ public class QuizMan : MonoBehaviour {
 	}
 
     public void GetQuestions(MultipleChoiceQuestionList questionList) {
-        if(questionList == null || questionList.questions == null) {
+        MultipleChoiceQuestionList qTemp = questionList;
+        if (qTemp == null || qTemp.questions == null)
+        {
+            if (!Application.isEditor)
+                CBUG.Do("No questions found.");
             return;
         }
-        for(int x = 0; x < Quizzes.Length; x++) {
-            Quizzes[x].Question = questionList.questions[x].stem;
-            Quizzes[x].TotalQs = questionList.questions[x].alternatives.Length;
-            StartCoroutine(GetURL(x, questionList.questions[x].imageURL));
-            for (int y = 0; y < Quizzes[x].TotalQs; y++) {
-                Quizzes[x].Answers[y] = questionList.questions[x].alternatives[y].text;
-                Quizzes[x].Answers_ID[y] = questionList.questions[x].alternatives[y].alternativeId;
-                Quizzes[x].Q_ID = questionList.questions[x].questionId;
-                Quizzes[x].CorrectAnswer_ID = questionList.questions[x].correctAlternativeId;
+        CBUG.Do("Questions found! Total Questions: " + qTemp.questions.Length);
+        quizzes = new Quiz[qTemp.questions.Length];
+        for (int x = 0; x < qTemp.questions.Length; x++)
+        {
+            quizzes[x] = new Quiz();
+            quizzes[x].TotalAnswerChoices = qTemp.questions[x].alternatives.Length;
+            quizzes[x].Answers = new string[quizzes[x].TotalAnswerChoices];
+            quizzes[x].Answers_ID = new string[quizzes[x].TotalAnswerChoices];
+            quizzes[x].Question = qTemp.questions[x].stem;
+            quizzes[x].Q_ID = qTemp.questions[x].questionId;
+            quizzes[x].SpriteURL = qTemp.questions[x].imageURL;
+            if (string.IsNullOrEmpty(quizzes[x].SpriteURL))
+            {
+                CBUG.Do("Question: " + quizzes[x].Answers_ID + " has no image.");
+            }
+            CBUG.Do("Question imageURL: " + quizzes[x].SpriteURL);
+
+            for (int y = 0; y < quizzes[x].TotalAnswerChoices; y++)
+            {
+                quizzes[x].Answers[y] = qTemp.questions[x].alternatives[y].text;
+                quizzes[x].Answers_ID[y] = qTemp.questions[x].alternatives[y].alternativeId;
+                quizzes[x].CorrectAnswer_ID = qTemp.questions[x].correctAlternativeId;
             }
         }
     }
 
     public void skipQuestion()
     {
-        GCont.SpeechBubble.GetComponentInChildren<Text>().text = GCont.Days[GCont.CurrentDay][GCont.CurrentNPC].Anger;
+        gCont.SpeechBubble.GetComponentInChildren<Text>().text = gCont.Days[gCont.CurrentDay][gCont.CurrentNPC].Anger;
         quizAnim.SetTrigger("Exit");
-        GCont.FrontChar.SetTrigger("WalkOut");
-        GCont.QuestionAsked = false;
-        GCont.CurrentProgress++;
-        GCont.UpdateCurrentProgress();
+        gCont.FrontChar.SetTrigger("WalkOut");
+        gCont.QuestionAsked = false;
+        gCont.CurrentProgress++;
+        gCont.UpdateCurrentProgress();
 
-        GCont.Smoke.Play();
-        GCont.Parts.PartSys.Play();
-        GCont.IsPaused = false;
-        GCont.Parts.IsPaused = false;
+        gCont.Smoke.Play();
+        gCont.Parts.PartSys.Play();
+        gCont.IsPaused = false;
+        gCont.Parts.IsPaused = false;
 
         MultipleChoiceAnswer answer = new MultipleChoiceAnswer();
         answer.alternativeId = "";
@@ -85,83 +110,81 @@ public class QuizMan : MonoBehaviour {
         LOLSDK.Instance.SubmitAnswer(answer);
     }
 
-    IEnumerator GetURL(int quizNum, string URL) {
-        if (string.IsNullOrEmpty(URL)) {
-            Quizzes[quizNum].Img = null;
-        } else {
-            CBUG.Do("Image URL IS: " + URL);
-            WWW www = new WWW(URL);
-            yield return www;
-            if (!string.IsNullOrEmpty(www.error)) {
-                StartCoroutine(SetStemImage(URL, Quizzes[quizNum].Img));
-            }
-        }
-    }
-
+    /// <summary>
+    /// Called by UI Button.
+    /// </summary>
+    /// <param name="answerNum">Answer number as 0 - 3.</param>
     public void CheckAnswer(int answerNum)
     {
 
         MultipleChoiceAnswer answer = new MultipleChoiceAnswer();
-        answer.alternativeId = Quizzes[currentSet].Answers_ID[answerNum];
-        answer.questionId = Quizzes[currentSet].Q_ID;
+        answer.alternativeId = quizzes[currentQuestion].Answers_ID[answerNum];
+        answer.questionId = quizzes[currentQuestion].Q_ID;
         LOLSDK.Instance.SubmitAnswer(answer);
-        if (Quizzes[currentSet].Answers_ID[answerNum] == Quizzes[currentSet].CorrectAnswer_ID) {
-            GCont.CurrentScore++;
-            GCont.SpeechBubble.GetComponentInChildren<Text>().text = GCont.Days[GCont.CurrentDay][GCont.CurrentNPC].Thanks;
+        if (quizzes[currentQuestion].Answers_ID[answerNum] == quizzes[currentQuestion].CorrectAnswer_ID) {
+            gCont.CurrentScore++;
+            gCont.SpeechBubble.GetComponentInChildren<Text>().text = gCont.Days[gCont.CurrentDay][gCont.CurrentNPC].Thanks;
         }else {
-            GCont.SpeechBubble.GetComponentInChildren<Text>().text = GCont.Days[GCont.CurrentDay][GCont.CurrentNPC].Anger;
+            gCont.SpeechBubble.GetComponentInChildren<Text>().text = gCont.Days[gCont.CurrentDay][gCont.CurrentNPC].Anger;
         }
         quizAnim.SetTrigger("Exit");
-        GCont.FrontChar.SetTrigger("WalkOut");
-        GCont.QuestionAsked = false;
-        GCont.CurrentProgress++;
-        GCont.UpdateCurrentProgress();
+        gCont.FrontChar.SetTrigger("WalkOut");
+        gCont.QuestionAsked = false;
+        gCont.UpdateCurrentProgress();
 
-        GCont.Smoke.Play();
-        GCont.Parts.PartSys.Play();
-        GCont.IsPaused = false;
-        GCont.Parts.IsPaused = false;
+        gCont.Smoke.Play();
+        gCont.Parts.PartSys.Play();
+        gCont.IsPaused = false;
+        gCont.Parts.IsPaused = false;
 
     }
 
     public void Init()
     {
-        currentSet++;
+        if (currentQuestion >= quizzes.Length - 1)
+            currentQuestion = -1;
+        currentQuestion++;
 
         quizAnim.SetTrigger("Quiz");
-        QuestionBox.text = Quizzes[currentSet].Question;
-        if(Quizzes[currentSet].Img == null) {
-              QuizImg.color = new Color(1f, 1f, 1f, 0f);
-        }else {
-            QuizImg.sprite = Quizzes[currentSet].Img.sprite;
+        QuestionBox.text = quizzes[currentQuestion].Question;
+
+        //If no image exists, hide the graphic
+        if (quizzes[currentQuestion].SpriteURL == null)
+        {
+            QuizImg.color = new Color(1f, 1f, 1f, 0f);
         }
-        for (int x = 0; x < AnswerBoxes.Length; x++) {
-            AnswerBoxes[x].text = Quizzes[currentSet].Answers[x];
+        else
+        {
+            //If it DOES Exist, first set graphic to "loading"
+            QuizImg.sprite = LoadingImg;
+            StartCoroutine(setQuestionImage(quizzes[currentQuestion].SpriteURL));
+            QuizImg.color = new Color(1f, 1f, 1f, 1f);
         }
-        for(int x = 0; x < AnswerBoxes.Length; x++) {
-            if(x >= Quizzes[currentSet].TotalQs) {
+        for (int x = 0; x < quizzes[currentQuestion].TotalAnswerChoices; x++)
+        {
+            AnswerBoxes[x].text = quizzes[currentQuestion].Answers[x];
+        }
+        for (int x = 0; x < AnswerBoxes.Length; x++)
+        {
+            if (x >= quizzes[currentQuestion].TotalAnswerChoices)
+            {
                 QButtons[x].SetActive(false);
-            }else {
+            }
+            else
+            {
                 QButtons[x].SetActive(true);
             }
         }
-        ////lazy bubble shuffle
-        //for (int x = 0; x < AnswerBoxes.Length/2; x++) {
-        //    string temp = AnswerBoxes[x].text;
-        //    string tempID = Quizzes[currentSet].Answers_ID[x];
-        //    //CBUG.Do("Temp is: " + temp);
-        //    //CBUG.Do("Temp was: " + temp);
-        //    int swapNum = Random.Range(0, AnswerBoxes.Length);
-        //    //CBUG.Do("Swapping Correct answer: " + Quizzes[currentSet].CorrectAnswer + " to: " + swapNum);
-        //    AnswerBoxes[x].text = AnswerBoxes[swapNum].text;
-        //    AnswerBoxes[swapNum].text = temp;
-        //    Quizzes[currentSet].Answers_ID[x] = Quizzes[currentSet].Answers_ID[swapNum];
-        //    Quizzes[currentSet].Answers_ID[swapNum] = tempID;
-        //}
     }
 
-    private IEnumerator SetStemImage(string url, Image img)
+    /// <summary>
+    /// When an image exists, sets the <see cref="QuizImg"/> sprite texture via given <paramref name="url"/>.
+    /// </summary>
+    /// <param name="url">The web address of the image to load.</param>
+    /// <returns></returns>
+    private IEnumerator setQuestionImage(string url)
     {
+        CBUG.Do("URL TO TEST IS: " + url);
         // Start a download of the given URL
         var www = new WWW(url);
         // wait until the download is done
@@ -169,43 +192,67 @@ public class QuizMan : MonoBehaviour {
         // Create a texture in DXT1 format
         Texture2D texture = new Texture2D(www.texture.width, www.texture.height, TextureFormat.DXT1, false);
 
-        // assign the downloaded image to sprite
-        www.LoadImageIntoTexture(texture);
-        Rect rec = new Rect(0, 0, texture.width, texture.height);
-        Sprite spriteToUse = Sprite.Create(texture, rec, new Vector2(0.5f, 0.5f), 100);
-        img.sprite = spriteToUse;
-
-        LayoutElement l_element = img.GetComponent<LayoutElement>();
-        if (texture.width > texture.height) 
+        if (www == null || texture == null || string.IsNullOrEmpty(url))
         {
-            l_element.preferredWidth = texture.width;
-            l_element.minHeight = texture.height;
+            if (www == null)
+                CBUG.Do("BAD URL!! + www null");
+            else if (texture == null)
+                CBUG.Do("BAD URL!! + texture null");
+            else
+                CBUG.Do("BAD URL!! + " + string.IsNullOrEmpty(url));
         }
         else
         {
-            l_element.minWidth = texture.width;
-            l_element.preferredHeight = texture.height;
+            // assign the downloaded image to sprite
+            www.LoadImageIntoTexture(texture);
+            Rect rec = new Rect(0, 0, texture.width, texture.height);
+            Sprite spriteToUse = Sprite.Create(texture, rec, new Vector2(0.5f, 0.5f), 100);
+            QuizImg.sprite = spriteToUse;
+
+            LayoutElement l_element = QuizImg.GetComponent<LayoutElement>();
+            if (texture.width > texture.height)
+            {
+                l_element.preferredWidth = texture.width;
+                l_element.minHeight = texture.height;
+            }
+            else
+            {
+                l_element.minWidth = texture.width;
+                l_element.preferredHeight = texture.height;
+            }
+
+
+            www.Dispose();
+            www = null;
         }
-
-
-        www.Dispose();
-        www = null;
     }
 
-    private IEnumerator LoadImage()
+    /// <summary>
+    /// For local use only. In-editor functionality testing.
+    /// </summary>
+    private void testQuizFunctionality()
     {
-        Texture2D temp = new Texture2D(0, 0);
-        WWW www = new WWW("imageurl");
+        int quizTotal = 10;
+        quizzes = new Quiz[quizTotal];
+        for (int x = 0; x < quizTotal; x++)
+        {
+            CBUG.Do("Question added: " + x);
+            quizzes[x] = new Quiz();
+            quizzes[x].Question = "Q" + x;
+            quizzes[x].TotalAnswerChoices = Random.Range(1, 4);
+            quizzes[x].Answers = new string[quizzes[x].TotalAnswerChoices];
+            quizzes[x].Answers_ID = new string[quizzes[x].TotalAnswerChoices];
+            quizzes[x].SpriteURL = "http://i.imgur.com/pResL3f.jpg";
 
-        // Wait for download to complete
-        yield return www;
-
-        GameObject go = GameObject.Find("StemImage");
-        go.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
-        GameObject imageTarget = GameObject.Find("StemImage");
-        temp = www.texture;
-        Sprite sprite = Sprite.Create(temp, new Rect(0, 0, temp.width, temp.height), new Vector2(0.5f, 0.5f));
-        Transform thumb = imageTarget.transform;
-        thumb.GetComponent<Image>().sprite = sprite;
+            for (int y = 0; y < quizzes[x].TotalAnswerChoices; y++)
+            {
+                quizzes[x].Answers[y] = "A" + y;
+                quizzes[x].Answers_ID[y] = "" + y;
+                quizzes[x].Q_ID = "" + x;
+                quizzes[x].CorrectAnswer_ID = "" + Mathf.Clamp(x, 1, 4);
+                CBUG.Do("Answer added: " + y);
+            }
+        }
     }
 }
+

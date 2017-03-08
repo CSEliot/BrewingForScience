@@ -165,11 +165,11 @@ public class PartMan : MonoBehaviour
     {
         //if (CurrSpeed + SpeedScale > MaxSpeed)
         //    return;
-        partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
-        partArrayLen = PartSys.GetParticles(partArray);
-        CanBoil = !(PartSys.main.maxParticles == 0);
-
+        //partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
+        //partArrayLen = PartSys.GetParticles(partArray);
         UpdateAvgSpd();
+
+        CanBoil = !(PartSys.main.maxParticles == 0);
 
         for (int x = 0; x < partArrayLen; x++)
         {
@@ -207,8 +207,8 @@ public class PartMan : MonoBehaviour
 
     public void UpdateAvgSpd()
     {
-        //partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
-        //partArrayLen = PartSys.GetParticles(partArray);
+        partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
+        partArrayLen = PartSys.GetParticles(partArray);
         totalSpd = 0;
         lowestSpd = 10000f;
 
@@ -234,7 +234,7 @@ public class PartMan : MonoBehaviour
         //}
         //PartSys.SetParticles(partArray, partArrayLen);
     }
-
+    
     /// <summary>
     /// Cooling Down
     /// </summary>
@@ -311,7 +311,7 @@ public class PartMan : MonoBehaviour
         CBUG.Do("STARTING BOIL!!");
         isBuffered = true;
         yield return boilBuffer;
-        if (CanBoil)
+        if (CanBoil && !GameControls.IsQuizTime())
         {
             IsBoiling = true;
             Tips.Spawn(0);

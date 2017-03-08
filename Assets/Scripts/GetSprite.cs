@@ -6,12 +6,13 @@ using System.Collections;
 public class GetSprite : MonoBehaviour {
 
     public Image spr;
-    public GameControls cont;
+    private GameControls cont;
 
     public AudioManager Audio;
 
 	// Use this for initialization
 	void Start () {
+        cont = GameControls.GetSelf();
     }
 	
 	// Update is called once per frame

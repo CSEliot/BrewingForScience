@@ -7,7 +7,7 @@ public class Tips : MonoBehaviour {
 
     public GameObject[] MyTips;
     private bool[] myTipsEnabled;
-    public Image CoverPanel;
+    public GameObject CoverPanel;
 
 	// Use this for initialization
 	void Start () {
@@ -17,7 +17,7 @@ public class Tips : MonoBehaviour {
             myTipsEnabled[x] = false;
             MyTips[x].SetActive(false);
         }
-        CoverPanel.enabled = false;
+        CoverPanel.SetActive(false);
 	}
 	
 	// Update is called once per frame
@@ -37,12 +37,19 @@ public class Tips : MonoBehaviour {
     {
         if (myTipsEnabled[tipNum])
             return;
+
+        //This is the tooltip to explain tooltips.
+        //if (!myTipsEnabled[5])
+        //{
+        //    myTipsEnabled[5] = true;
+        //    MyTips[5].SetActive(true);
+        //}
         myTipsEnabled[tipNum] = true;
         MyTips[tipNum].SetActive(true);
         //Pause Game
         PauseHandler.PauseGame();
         //Enable panel raycast.
-        CoverPanel.enabled = true;
+        CoverPanel.SetActive(true);
     }
     #endregion
 }

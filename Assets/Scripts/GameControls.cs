@@ -10,6 +10,7 @@ public class GameControls : MonoBehaviour {
 
     public LidMovement Lid;
     public PartMan Parts;
+    public TempReader _TempReader;
 
     public GameObject ServeBtn;
     public GameObject TempControls;
@@ -18,6 +19,13 @@ public class GameControls : MonoBehaviour {
     public GameObject EndGamePanel;
     public GameObject HeatControls;
     public GameObject CoolControls;
+
+    #region Coffee Visual Art
+    public GameObject CoffeeBG;
+    public GameObject CoffeeTop;
+    public GameObject CoffeeBottom;
+    #endregion
+
 
     private int currentTemp = 0;
     private int MaxTemp = 5;
@@ -268,6 +276,9 @@ public class GameControls : MonoBehaviour {
             //spawn next
             //check somewhere to go to next day
             ClearCoffee();
+            CoffeeBG.SetActive(false);
+            CoffeeBottom.SetActive(false);
+            CoffeeTop.SetActive(false);
             QuestionAsked = false;
             CurrentProgress++;
             UpdateCurrentProgress();
@@ -283,6 +294,7 @@ public class GameControls : MonoBehaviour {
             //ClearCoffee();
         }
         StartCoroutine(ReactiveServeButton());
+        Parts.UpdateAvgSpd();
     }
 
     /// <summary>
@@ -311,6 +323,10 @@ public class GameControls : MonoBehaviour {
         Lid.EmptyAll();
         Parts.IsBoiling = false;
         Parts.CanBoil = false;
+        CoffeeBG.SetActive(false);
+        CoffeeBottom.SetActive(false);
+        CoffeeTop.SetActive(false);
+        _TempReader.ResetTempReader();
     }
 
     public void IncreaseCoffee()
@@ -325,22 +341,30 @@ public class GameControls : MonoBehaviour {
         Parts.CanBoil = false;
         Parts.HeatUpRateMod += HeatUpVolMod;
         Lid.FillSome();
+        CoffeeBG.SetActive(true);
+        CoffeeBottom.SetActive(true);
+        CoffeeTop.SetActive(true);
     }
 
     public void DecreaseCoffee()
     {
         if (Lid.CurrFill == LidMovement.FillStates.Empty)
             return;
-        Parts.DeleteParts(0);
+        //Parts.DeleteParts(0);
         Parts.HeatUpRateMod -= HeatUpVolMod;
         if(Lid.EmptySome()){
             Parts.IsBoiling = false;
             Parts.IsBoiling = false;
+            CoffeeBG.SetActive(false);
+            CoffeeBottom.SetActive(false);
+            CoffeeTop.SetActive(false);
+            _TempReader.ResetTempReader();
         }
     }
 
     public void IncreaseHeat()
     {
+        Tips.Spawn(6);
         if (currentTemp >= MaxTemp) {
             HeatControls.SetActive(false);
             Tips.Spawn(1);

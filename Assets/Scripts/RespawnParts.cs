@@ -26,7 +26,6 @@ public class RespawnParts : MonoBehaviour {
 
     private void OnParticleTrigger()
     {
-        CBUG.Do("TEST PART COLLIDE");
         totalExitted = partSys.GetTriggerParticles(ParticleSystemTriggerEventType.Inside, outParts);
 
         if (totalExitted == 0)
@@ -43,7 +42,7 @@ public class RespawnParts : MonoBehaviour {
         pt.velocity = new Vector3(xVal, -xVal - 0.1f, 0f);
         partSys.Emit(pt, totalExitted + 2);
 
-        Debug.Log("Emitting total new parts: " + totalExitted);
+        //Debug.Log("Emitting total new parts: " + totalExitted);
 
         partSys.SetTriggerParticles(ParticleSystemTriggerEventType.Inside, outParts);
     }

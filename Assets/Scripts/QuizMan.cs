@@ -32,6 +32,8 @@ public class QuizMan : MonoBehaviour {
     private Animator quizAnim;
 
     public Image QuizImg;
+    public GameObject QuizImgObject;
+    public GameObject QuizImgButton;
     public Sprite LoadingImg;
 
     private string[] alternativeIDs;
@@ -72,7 +74,7 @@ public class QuizMan : MonoBehaviour {
             quizzes[x].TotalAnswerChoices = qTemp.questions[x].alternatives.Length;
             quizzes[x].Answers = new string[quizzes[x].TotalAnswerChoices];
             quizzes[x].Answers_ID = new string[quizzes[x].TotalAnswerChoices];
-            quizzes[x].Question = qTemp.questions[x].stem;
+            quizzes[x].Question = checkForImage(qTemp.questions[x].stem);
             quizzes[x].Q_ID = qTemp.questions[x].questionId;
             quizzes[x].SpriteURL = qTemp.questions[x].imageURL;
             if (string.IsNullOrEmpty(quizzes[x].SpriteURL))
@@ -152,13 +154,16 @@ public class QuizMan : MonoBehaviour {
         if (quizzes[currentQuestion].SpriteURL == null)
         {
             QuizImg.color = new Color(1f, 1f, 1f, 0f);
+            QuizImgButton.SetActive(false);
         }
         else
         {
+            QuizImgButton.SetActive(true);
             //If it DOES Exist, first set graphic to "loading"
+            QuizImg.color = new Color(1f, 1f, 1f, 0f);
+            QuizImgObject.SetActive(true);
             QuizImg.sprite = LoadingImg;
             StartCoroutine(setQuestionImage(quizzes[currentQuestion].SpriteURL));
-            QuizImg.color = new Color(1f, 1f, 1f, 1f);
         }
         for (int x = 0; x < quizzes[currentQuestion].TotalAnswerChoices; x++)
         {
@@ -225,6 +230,8 @@ public class QuizMan : MonoBehaviour {
             www.Dispose();
             www = null;
         }
+        QuizImgObject.SetActive(false);
+        QuizImg.color = new Color(1f, 1f, 1f, 1f);
     }
 
     /// <summary>
@@ -253,6 +260,15 @@ public class QuizMan : MonoBehaviour {
                 CBUG.Do("Answer added: " + y);
             }
         }
+    }
+
+    private string checkForImage(string text)
+    {
+        if (text.Contains("[IMAGE]"))
+        {
+            return text.Replace("[IMAGE]", "(See Image)");
+        }
+        return text;
     }
 }
 

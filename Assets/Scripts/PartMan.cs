@@ -10,7 +10,9 @@ public class PartMan : MonoBehaviour
 {
 
     public LidMovement Lid;
+    public TempReader _TempReader;
     private WaitForSeconds boilBuffer;
+
 
     #region Controls behavior
     [Tooltip("How many particles per volume of coffee")]
@@ -176,8 +178,8 @@ public class PartMan : MonoBehaviour
             if(partArray[x].velocity.sqrMagnitude > sqrAvgSpd)
             {
                 partArray[x].velocity = new Vector3(
-                    partArray[x].velocity.x / SpeedScale,
-                    partArray[x].velocity.y / SpeedScale,
+                    partArray[x].velocity.x / (SpeedScale * 2),
+                    partArray[x].velocity.y / (SpeedScale * 2),
                     0f
                 );
             }
@@ -224,6 +226,7 @@ public class PartMan : MonoBehaviour
                 lowestSpd = tempSpd;
         }
         sqrAvgSpd = (totalSpd / partArrayLen) + targetSqrAvgSpd;
+        _TempReader.SetReadingTemp(sqrAvgSpd);
         //for (int x = 0; x < partArrayLen; x++) {
         //if (IsBoiling)
         //    partArray[x].lifetime = partArray[x].startLifetime / 2;

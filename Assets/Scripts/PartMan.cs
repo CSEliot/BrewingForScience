@@ -20,28 +20,33 @@ public class PartMan : MonoBehaviour
     [Tooltip("Multiplicative speed applied to particles every DeltaHeatUpRate")]
     public float SpeedScale;
     [Tooltip("If all particles are above this point, boiling occurs")]
-    public float BoilPoint;
+    public float SqrBoilPoint;
+    public float SqrFreezePoint;
     [Tooltip("# of frames that an evaporation will occur")]
-    public float EvapoRate;
-    [Tooltip("The change the heatup rate experiences on +/-'ing the heatup rate")]
-    public float DeltaHeatUpRate;
-    public float MaxSecondsPerHeatUp;
+    public float EvaporateWaitTime;
+    public float HeatUpMaxWaitTime;
+    public bool HeatUpEnabled;
     public bool IsBoiling;
     public bool CanBoil;
     [Tooltip("Buffer time is how long at Max Temp before Boiling starts.")]
     public float BoilBufferTime;
-    [Tooltip("Alters heatup rate based on volume of liquid")]
-    public float HeatUpRateMod;
+    [Tooltip("Alters heatup rate.")]
+    public float HeatChangeWaitTime;
+    [Tooltip("Alters cooldown rate.")]
+    public float CoolDownRateMod;
     #endregion
 
     #region Per-particle management
     public ParticleSystem PartSys;
+    [Tooltip("The change the heatup rate experiences on +/-'ing the heatup rate")]
+    private float deltaHeatUpWaitTime;
     private int partArrayLen;
     private ParticleSystem.Particle[] partArray;
-    private float heatUpRate;
-    private float minHeatUpRate;
+    private float heatUpWaitTime;
+    private float minHeatUpWaitTime;
     private const int heatUpStates = 5;
     private ParticleSystem.MainModule mainPartSys;
+    public float SqrHighestSpd;
     #endregion
 
     #region Private Pre-Boil Buffer Vars
@@ -51,8 +56,8 @@ public class PartMan : MonoBehaviour
     #region Particle State Sampling Vars
     private float prevTime;
     private float sqrAvgSpd = 0f;
-    private float lowestSpd = 0f;
-    private float totalSpd = 0f;
+    private float sqrLowestSpd = 0f;
+    private float sqrTotalSpd = 0f;
     private float totalSamples = 0f;
     private float tempSpd = 0f;
     #endregion
@@ -73,13 +78,16 @@ public class PartMan : MonoBehaviour
 
         IsPaused = false;
 
+        HeatUpEnabled = false;
+
         PartSys = GetComponent<ParticleSystem>();
         partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
         mainPartSys = PartSys.main;
-        heatUpRate = MaxSecondsPerHeatUp;
-        minHeatUpRate = MaxSecondsPerHeatUp - (DeltaHeatUpRate * (float)(heatUpStates));
-        if (minHeatUpRate < 0) {
-            CBUG.SrsError("MIN HEAT RATE TOO LOW, LOWER DELTA or RAISE MAXSECONDS: " + minHeatUpRate);
+        heatUpWaitTime = HeatUpMaxWaitTime;
+        deltaHeatUpWaitTime = HeatUpMaxWaitTime / heatUpStates;
+        minHeatUpWaitTime = HeatUpMaxWaitTime - (deltaHeatUpWaitTime * (float)(heatUpStates));
+        if (minHeatUpWaitTime < 0) {
+            CBUG.SrsError("MIN HEAT RATE TOO LOW, LOWER DELTA or RAISE MAXSECONDS: " + minHeatUpWaitTime);
         }
         sqrAvgSpd = mainPartSys.startSpeed.constant * mainPartSys.startSpeed.constant;
     }
@@ -90,11 +98,25 @@ public class PartMan : MonoBehaviour
 
         if (IsPaused)
             return;
-        //&& heatUpRate < MaxSecondsPerHeatUp
-        if (Time.time - prevTime >= (heatUpRate + HeatUpRateMod + HeatRateModStatic) ) {
-            IncreaseSpeed();
-            prevTime = Time.time;
+
+        if (HeatUpEnabled)
+        {
+            //&& heatUpRate < MaxSecondsPerHeatUp
+            if (Time.time - prevTime >= (heatUpWaitTime + HeatChangeWaitTime + HeatRateModStatic) ) {
+                IncreaseHeat();
+                prevTime = Time.time;
+            }
+
         }
+        else
+        {
+            if (Time.time - prevTime >= (CoolDownRateMod + HeatChangeWaitTime))
+            {
+                DecreaseHeat();
+                prevTime = Time.time;
+            }
+        }
+
 
         if (CanBoil && !isBuffered && !IsBoiling)
         {
@@ -136,7 +158,6 @@ public class PartMan : MonoBehaviour
     /// <param name="count">Amount of particles to delete.</param>
     private void deleteMultiple(int count)
     {
-        partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
         partArrayLen = PartSys.GetParticles(partArray);
         //Edge Case: get told to delete more than exists.
         count = partArrayLen < count ? partArrayLen : count;
@@ -163,39 +184,52 @@ public class PartMan : MonoBehaviour
 
     }
 
-    public void IncreaseSpeed()
+    public void IncreaseHeat()
+    {
+        partArrayLen = PartSys.GetParticles(partArray);
+        UpdateAvgSpd();
+
+        CanBoil = true;
+
+        for (int x = 0; x < partArrayLen; x++)
+        {
+            Vector3 tempV = Vector3.Scale(partArray[x].velocity, new Vector3(SpeedScale, SpeedScale));
+            if(tempV.sqrMagnitude < SqrBoilPoint + 1f)
+                partArray[x].velocity = tempV;
+        }
+
+        if (sqrAvgSpd < SqrBoilPoint)
+        {
+            CanBoil = false;
+        }
+        PartSys.SetParticles(partArray, partArrayLen);
+    }
+
+    public void DecreaseHeat()
     {
         //if (CurrSpeed + SpeedScale > MaxSpeed)
         //    return;
         //partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
-        //partArrayLen = PartSys.GetParticles(partArray);
+        partArrayLen = PartSys.GetParticles(partArray);
         UpdateAvgSpd();
 
-        CanBoil = !(PartSys.main.maxParticles == 0);
+        if (sqrAvgSpd <= SqrFreezePoint)
+            return;
+
+        CanBoil = true;
 
         for (int x = 0; x < partArrayLen; x++)
         {
-            if(partArray[x].velocity.sqrMagnitude > sqrAvgSpd)
-            {
-                partArray[x].velocity = new Vector3(
-                    partArray[x].velocity.x / (SpeedScale * 2),
-                    partArray[x].velocity.y / (SpeedScale * 2),
-                    0f
-                );
-            }
-            else
-            {
-                partArray[x].velocity = new Vector3(
-                    partArray[x].velocity.x * SpeedScale,
-                    partArray[x].velocity.y * SpeedScale,
-                    0f
-                );
-            }
+            partArray[x].velocity.Scale(Vector3.one / SpeedScale);
         }
-        if (sqrAvgSpd < BoilPoint)
+
+        if (sqrAvgSpd < SqrBoilPoint)
         {
             CanBoil = false;
         }
+
+
+
         //for (int x = 0; x < partArrayLen; x++) {
         //if (IsBoiling)
         //    partArray[x].lifetime = partArray[x].startLifetime / 2;
@@ -209,10 +243,10 @@ public class PartMan : MonoBehaviour
 
     public void UpdateAvgSpd()
     {
-        partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
         partArrayLen = PartSys.GetParticles(partArray);
-        totalSpd = 0;
-        lowestSpd = 10000f;
+        sqrTotalSpd = 0;
+        sqrLowestSpd = 10000f;
+        SqrHighestSpd = 0f;
 
         if(partArrayLen == 0) {
             sqrAvgSpd = 0;
@@ -221,48 +255,50 @@ public class PartMan : MonoBehaviour
 
         for (int x = 0; x < partArrayLen; x++) {
             tempSpd = partArray[x].velocity.sqrMagnitude;
-            totalSpd += tempSpd;
-            if (lowestSpd > tempSpd)
-                lowestSpd = tempSpd;
+            sqrTotalSpd += tempSpd;
+            if (sqrLowestSpd > tempSpd)
+                sqrLowestSpd = tempSpd;
+            if (SqrHighestSpd < tempSpd)
+                SqrHighestSpd = tempSpd;
         }
-        sqrAvgSpd = (totalSpd / partArrayLen) + targetSqrAvgSpd;
+        sqrAvgSpd = (sqrTotalSpd / partArrayLen);
         _TempReader.SetReadingTemp(sqrAvgSpd);
-        //for (int x = 0; x < partArrayLen; x++) {
-        //if (IsBoiling)
-        //    partArray[x].lifetime = partArray[x].startLifetime / 2;
-        //else {
-        //    partArray[x].lifetime = partArray[x].startLifetime;
-        //}
-        //    //Lifetime used here to change sprite in particle.
-        //}
-        //PartSys.SetParticles(partArray, partArrayLen);
+        
     }
     
     /// <summary>
     /// Cooling Down
     /// </summary>
-    public void IncreaseRate()
+    public void SlowdownHeatup()
     {
-        if (heatUpRate > MaxSecondsPerHeatUp)
+        if (heatUpWaitTime > HeatUpMaxWaitTime)
             return;
-        heatUpRate += DeltaHeatUpRate;
+        heatUpWaitTime += deltaHeatUpWaitTime;
         targetSqrAvgSpd--;
+        if (targetSqrAvgSpd == 0)
+        {
+            targetSqrAvgSpd = -1;
+        }
+
     }
 
     /// <summary>
     /// Heating Up
     /// </summary>
-    public void DecreaseRate()
+    public void SpeedupHeatup()
     {
-        if (heatUpRate < minHeatUpRate)
+        if (heatUpWaitTime < minHeatUpWaitTime)
             return;
-        heatUpRate -= DeltaHeatUpRate;
+        heatUpWaitTime -= deltaHeatUpWaitTime;
+        if(targetSqrAvgSpd == -1)
+        {
+            targetSqrAvgSpd = 0;
+        }
         targetSqrAvgSpd++;
     }
 
     public void DecreaseSpeed()
     {
-        partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
         partArrayLen = PartSys.GetParticles(partArray);
         for (int x = 0; x < partArrayLen; x++)
         {
@@ -277,13 +313,13 @@ public class PartMan : MonoBehaviour
 
     public float HeatUpRate {
         get {
-            return heatUpRate;
+            return heatUpWaitTime;
         }
     }
 
     public float MinHeatUpRate {
         get {
-            return minHeatUpRate;
+            return minHeatUpWaitTime;
         }
     }
 
@@ -295,17 +331,16 @@ public class PartMan : MonoBehaviour
 
     public void CalculateAvgSpeed()
     {
-        partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
         partArrayLen = PartSys.GetParticles(partArray);
         //IsBoiling = !(PartSys.main.maxParticles == 0);
-        totalSpd = 0;
+        sqrTotalSpd = 0;
         for (int x = 0; x < partArrayLen; x++) {
-            totalSpd += partArray[x].velocity.sqrMagnitude;
+            sqrTotalSpd += partArray[x].velocity.sqrMagnitude;
         }
         //if (avgSpd < BoilPoint) {
         //    IsBoiling = false;
         //}
-        sqrAvgSpd = totalSpd / partArrayLen;
+        sqrAvgSpd = sqrTotalSpd / partArrayLen;
     }
 
     #region Helper Functions

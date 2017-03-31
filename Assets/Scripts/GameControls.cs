@@ -19,6 +19,7 @@ public class GameControls : MonoBehaviour {
     public GameObject EndGamePanel;
     public GameObject HeatControls;
     public GameObject CoolControls;
+    public GameObject TempReaderObj;
 
     #region Coffee Visual Art
     public GameObject CoffeeBG;
@@ -161,7 +162,7 @@ public class GameControls : MonoBehaviour {
             Smoke.Stop();
         }
         if (Parts.IsBoiling) {
-            if (Time.time - prevTime >= Parts.EvapoRate) {
+            if (Time.time - prevTime >= Parts.EvaporateWaitTime) {
                 prevTime = Time.time;
                 //Incremental parts deletion
                 Parts.DeleteParts(EvapoMount);
@@ -190,6 +191,7 @@ public class GameControls : MonoBehaviour {
             if(CurrentDay == 2)
             {
                 Tips.Spawn(3);
+                TempReaderObj.SetActive(true);
             }
 
             if(CurrentDay == 3) {
@@ -294,7 +296,6 @@ public class GameControls : MonoBehaviour {
             //ClearCoffee();
         }
         StartCoroutine(ReactiveServeButton());
-        Parts.UpdateAvgSpd();
     }
 
     /// <summary>
@@ -333,13 +334,16 @@ public class GameControls : MonoBehaviour {
     {
         if (Lid.CurrFill == LidMovement.FillStates.Large)
         {
-            Tips.Spawn(2);
+            if(CurrentDay == 2)
+            {
+                Tips.Spawn(2);
+            }
             return;
         }
         Parts.AddParts();
         Parts.IsBoiling = false;
         Parts.CanBoil = false;
-        Parts.HeatUpRateMod += HeatUpVolMod;
+        Parts.HeatChangeWaitTime += HeatUpVolMod;
         Lid.FillSome();
         CoffeeBG.SetActive(true);
         CoffeeBottom.SetActive(true);
@@ -351,7 +355,7 @@ public class GameControls : MonoBehaviour {
         if (Lid.CurrFill == LidMovement.FillStates.Empty)
             return;
         //Parts.DeleteParts(0);
-        Parts.HeatUpRateMod -= HeatUpVolMod;
+        Parts.HeatChangeWaitTime -= HeatUpVolMod;
         if(Lid.EmptySome()){
             Parts.IsBoiling = false;
             Parts.IsBoiling = false;
@@ -371,8 +375,9 @@ public class GameControls : MonoBehaviour {
         } else {
             CoolControls.SetActive(true);
             currentTemp++;
+            Parts.HeatUpEnabled = true;
         }
-        Parts.DecreaseRate();
+        Parts.SpeedupHeatup();
     }
 
     public void DecreaseHeat()
@@ -380,11 +385,12 @@ public class GameControls : MonoBehaviour {
         if(currentTemp <= 0) {
             CoolControls.SetActive(false);
             Tips.Spawn(4);
+            Parts.HeatUpEnabled = false;
         } else {
             HeatControls.SetActive(true);
             currentTemp--;
         }
-        Parts.IncreaseRate();
+        Parts.SlowdownHeatup();
     }
 
     public Sprite GetCurrentCharSprite(float num)

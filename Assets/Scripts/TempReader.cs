@@ -43,7 +43,7 @@ public class TempReader : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        maxSpd = Parts.BoilPoint;
+        maxSpd = Parts.SqrBoilPoint;
         spdRange = maxSpd - minSpd;
         celciusRange = celciusMax - celciusMin;
         fahrenheitMin = celciusMin * 1.8f + 32f;

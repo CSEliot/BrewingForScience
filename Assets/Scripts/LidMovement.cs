@@ -152,7 +152,7 @@ public class LidMovement : MonoBehaviour {
         }
         if (transform.localPosition.y - amt < YMin + ((float)CurrFill * MovIncrement)) {
             CurrFill--;
-            Parts.HeatUpRateMod -= gameCont.HeatUpVolMod;
+            Parts.HeatChangeWaitTime -= gameCont.HeatUpVolMod;
         }
         
         transform.Translate(new Vector3(

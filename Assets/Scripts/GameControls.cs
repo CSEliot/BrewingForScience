@@ -238,7 +238,7 @@ public class GameControls : MonoBehaviour {
             Parts.IsPaused = true;
 
             //CALL PARTS INIT
-            Quiz.Init();
+            Quiz.Init(true);
         }
     }
 
@@ -250,7 +250,7 @@ public class GameControls : MonoBehaviour {
         Parts.IsPaused = true;
 
         //CALL PARTS INIT
-        Quiz.Init();
+        Quiz.Init(true);
     }
 
     public void EndRequest()

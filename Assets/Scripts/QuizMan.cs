@@ -38,6 +38,9 @@ public class QuizMan : MonoBehaviour {
 
     private string[] alternativeIDs;
 
+    public int DailyQuestionsMax = 3;
+    private int currentDailyQuestions;
+
 	// Use this for initialization
 	void Start () {
 
@@ -129,25 +132,34 @@ public class QuizMan : MonoBehaviour {
         }else {
             gCont.SpeechBubble.GetComponentInChildren<Text>().text = gCont.Days[gCont.CurrentDay][gCont.CurrentNPC].Anger;
         }
-        quizAnim.SetTrigger("Exit");
-        gCont.FrontChar.SetTrigger("WalkOut");
-        gCont.QuestionAsked = false;
-        gCont.UpdateCurrentProgress();
 
-        gCont.Smoke.Play();
-        gCont.Parts.PartSys.Play();
-        gCont.IsPaused = false;
-        gCont.Parts.IsPaused = false;
+        if (currentDailyQuestions >= DailyQuestionsMax)
+        {
+            quizAnim.SetTrigger("Exit");
+            gCont.FrontChar.SetTrigger("WalkOut");
+            gCont.QuestionAsked = false;
+            gCont.UpdateCurrentProgress();
 
+            gCont.Smoke.Play();
+            gCont.Parts.PartSys.Play();
+            gCont.IsPaused = false;
+            gCont.Parts.IsPaused = false;
+            currentDailyQuestions = 0;
+        }
+        else
+        {
+            Init(false);
+        }
     }
 
-    public void Init()
+    public void Init(bool firstLoad)
     {
         if (currentQuestion >= quizzes.Length - 1)
             currentQuestion = -1;
         currentQuestion++;
-
-        quizAnim.SetTrigger("Quiz");
+        currentDailyQuestions++;
+        if(firstLoad)
+            quizAnim.SetTrigger("Quiz");
         QuestionBox.text = quizzes[currentQuestion].Question;
 
         //If no image exists, hide the graphic

@@ -32,6 +32,8 @@ public class TempReader : MonoBehaviour
 
     private float partSpd;
 
+    private bool isEnabled;
+
     /*
      * new_value = ( (old_value - old_min) / (old_max - old_min) ) * (new_max - new_min) + new_min
      * Or a little more readable:
@@ -52,6 +54,8 @@ public class TempReader : MonoBehaviour
         kelvinMin = celciusMin + 273.15f;
         kelvinMax = celciusMax + 273.15f;
         kelvinRange = kelvinMax - kelvinMin;
+
+        isEnabled = true;
     }
 
     // Update is called once per frame
@@ -62,6 +66,12 @@ public class TempReader : MonoBehaviour
 
     public void ChangeReadingType()
     {
+        Tips.Spawn(7);
+
+        if (!isEnabled)
+            return; 
+    
+
         CurrentType++;
         CurrentType = CurrentType > 3 ? 1 : CurrentType;
         SetReadingTemp(partSpd);
@@ -69,6 +79,7 @@ public class TempReader : MonoBehaviour
 
     public void SetReadingTemp(float partSpd)
     {
+        isEnabled = true;
         this.partSpd = partSpd;
         if(CurrentType == 1)
         {
@@ -94,6 +105,7 @@ public class TempReader : MonoBehaviour
     public void ResetTempReader ()
     {
         setText("Scanning for heat ...");
+        isEnabled = false;
     }
 
     private void setCelcius(float partSpd)

@@ -48,6 +48,9 @@ public class GameControls : MonoBehaviour {
 
     private float[] volHeights;
 
+    /// <summary>
+    /// Disables Serve button until question is answered.
+    /// </summary>
     public bool QuestionAsked = false;
 
     public QuizMan Quiz;
@@ -118,9 +121,10 @@ public class GameControls : MonoBehaviour {
     public int CurrentProgress;
     public int CurrentScore;
 
+    public bool CantTestServeStatus;
+
     // Use this for initialization
     void Start () {
-
         IsPaused = false;
 
         LOLSDK.Init("com.kiteliongames.brewcoffee");
@@ -173,6 +177,8 @@ public class GameControls : MonoBehaviour {
                 }
             }
         }
+
+        canServeStatus();
     }
 
     public void SpawnNPC()
@@ -184,14 +190,14 @@ public class GameControls : MonoBehaviour {
             CurrentNPC = 0;
             CurrentDay++;
 
-            //if(CurrentDay < 2)
-            //{
-            //}
+            if(CurrentDay == 1)
+            {
+                TempReaderObj.SetActive(true);
+            }
 
             if(CurrentDay == 2)
             {
                 Tips.Spawn(3);
-                TempReaderObj.SetActive(true);
             }
 
             if(CurrentDay == 3) {
@@ -234,6 +240,17 @@ public class GameControls : MonoBehaviour {
             //CALL PARTS INIT
             Quiz.Init();
         }
+    }
+
+    public void AskQuestion()
+    {
+        Smoke.Pause();
+        Parts.PartSys.Pause();
+        IsPaused = true;
+        Parts.IsPaused = true;
+
+        //CALL PARTS INIT
+        Quiz.Init();
     }
 
     public void EndRequest()
@@ -298,6 +315,22 @@ public class GameControls : MonoBehaviour {
         StartCoroutine(ReactiveServeButton());
     }
 
+    private void canServeStatus()
+    {
+        if (CantTestServeStatus)
+            return;
+        MaxSpd = days[CurrentDay][CurrentNPC].MaxTemp;
+        MinSpd = days[CurrentDay][CurrentNPC].MinTemp;
+        bool prevGoodStatus = (InMinSpd && InMaxSpd); 
+        InMinSpd = Parts.SqrAvgSpd >= MinSpd;
+        InMaxSpd = Parts.SqrAvgSpd <= MaxSpd;
+        if (prevGoodStatus != (InMinSpd && InMaxSpd))
+        {
+            //_TempReader.SetReadingTemp(Parts.SqrAvgSpd);
+            CBUG.Log("Servable Status changed!");
+        }
+    }
+
     /// <summary>
     /// Iterates through state towards target fill state.
     /// Possible edge case includes that the state changes require a frame between them.
@@ -343,7 +376,7 @@ public class GameControls : MonoBehaviour {
         Parts.AddParts();
         Parts.IsBoiling = false;
         Parts.CanBoil = false;
-        Parts.HeatChangeWaitTime += HeatUpVolMod;
+        Parts.VolumeChangeWaitTime += HeatUpVolMod;
         Lid.FillSome();
         CoffeeBG.SetActive(true);
         CoffeeBottom.SetActive(true);
@@ -355,9 +388,8 @@ public class GameControls : MonoBehaviour {
         if (Lid.CurrFill == LidMovement.FillStates.Empty)
             return;
         //Parts.DeleteParts(0);
-        Parts.HeatChangeWaitTime -= HeatUpVolMod;
+        Parts.VolumeChangeWaitTime -= HeatUpVolMod;
         if(Lid.EmptySome()){
-            Parts.IsBoiling = false;
             Parts.IsBoiling = false;
             CoffeeBG.SetActive(false);
             CoffeeBottom.SetActive(false);

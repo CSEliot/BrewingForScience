@@ -38,7 +38,7 @@ public class RespawnParts : MonoBehaviour {
         {
             ParticleSystem.Particle p = exitParts[x];
             p.position = RespawnLoc.position;
-            p.velocity = new Vector3(speedVal, -speedVal, 0f);
+            //p.velocity = new Vector3(speedVal, -speedVal, 0f);
             exitParts[x] = p;
         }
 

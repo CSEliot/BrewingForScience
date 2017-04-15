@@ -30,13 +30,13 @@ public class PartMan : MonoBehaviour
     public bool CanBoil;
     [Tooltip("Buffer time is how long at Max Temp before Boiling starts.")]
     public float BoilBufferTime;
-    [Tooltip("Alters heatup rate.")]
-    public float HeatChangeWaitTime;
     [Tooltip("Alters cooldown rate.")]
     public float CoolDownRateMod;
     #endregion
 
     #region Per-particle management
+    [Tooltip("Alters heatup rate.")]
+    public float VolumeChangeWaitTime;
     public ParticleSystem PartSys;
     [Tooltip("The change the heatup rate experiences on +/-'ing the heatup rate")]
     private float deltaHeatUpWaitTime;
@@ -71,6 +71,8 @@ public class PartMan : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        VolumeChangeWaitTime = 0f;
+
         CanBoil = false;
         boilBuffer = new WaitForSeconds(BoilBufferTime);
 
@@ -102,7 +104,7 @@ public class PartMan : MonoBehaviour
         if (HeatUpEnabled)
         {
             //&& heatUpRate < MaxSecondsPerHeatUp
-            if (Time.time - prevTime >= (heatUpWaitTime + HeatChangeWaitTime + HeatRateModStatic) ) {
+            if (Time.time - prevTime >= (heatUpWaitTime + VolumeChangeWaitTime + HeatRateModStatic) ) {
                 IncreaseHeat();
                 prevTime = Time.time;
             }
@@ -110,7 +112,7 @@ public class PartMan : MonoBehaviour
         }
         else
         {
-            if (Time.time - prevTime >= (CoolDownRateMod + HeatChangeWaitTime))
+            if (Time.time - prevTime >= (CoolDownRateMod + VolumeChangeWaitTime))
             {
                 DecreaseHeat();
                 prevTime = Time.time;
@@ -141,6 +143,7 @@ public class PartMan : MonoBehaviour
     public void ClearParts()
     {
         PartSys.Clear();
+        VolumeChangeWaitTime = 0f;
     }
 
     /// <summary>
@@ -187,7 +190,6 @@ public class PartMan : MonoBehaviour
     public void IncreaseHeat()
     {
         partArrayLen = PartSys.GetParticles(partArray);
-        UpdateAvgSpd();
 
         CanBoil = true;
 
@@ -198,11 +200,13 @@ public class PartMan : MonoBehaviour
                 partArray[x].velocity = tempV;
         }
 
+        UpdateAvgSpd();
         if (sqrAvgSpd < SqrBoilPoint)
         {
             CanBoil = false;
         }
         PartSys.SetParticles(partArray, partArrayLen);
+        _TempReader.SetReadingTemp(sqrAvgSpd);
     }
 
     public void DecreaseHeat()
@@ -211,39 +215,27 @@ public class PartMan : MonoBehaviour
         //    return;
         //partArray = new ParticleSystem.Particle[PartSys.main.maxParticles];
         partArrayLen = PartSys.GetParticles(partArray);
-        UpdateAvgSpd();
-
-        if (sqrAvgSpd <= SqrFreezePoint)
-            return;
 
         CanBoil = true;
 
         for (int x = 0; x < partArrayLen; x++)
         {
-            partArray[x].velocity.Scale(Vector3.one / SpeedScale);
+            Vector3 tempV = Vector3.Scale(partArray[x].velocity, new Vector3(1f/SpeedScale, 1f/SpeedScale));
+            if (tempV.sqrMagnitude > SqrFreezePoint - 1f)
+                partArray[x].velocity = tempV;
         }
 
+        UpdateAvgSpd();
         if (sqrAvgSpd < SqrBoilPoint)
         {
             CanBoil = false;
         }
-
-
-
-        //for (int x = 0; x < partArrayLen; x++) {
-        //if (IsBoiling)
-        //    partArray[x].lifetime = partArray[x].startLifetime / 2;
-        //else {
-        //    partArray[x].lifetime = partArray[x].startLifetime;
-        //}
-        //    //Lifetime used here to change sprite in particle.
-        //}
         PartSys.SetParticles(partArray, partArrayLen);
+        _TempReader.SetReadingTemp(sqrAvgSpd);
     }
 
     public void UpdateAvgSpd()
     {
-        partArrayLen = PartSys.GetParticles(partArray);
         sqrTotalSpd = 0;
         sqrLowestSpd = 10000f;
         SqrHighestSpd = 0f;
@@ -262,8 +254,6 @@ public class PartMan : MonoBehaviour
                 SqrHighestSpd = tempSpd;
         }
         sqrAvgSpd = (sqrTotalSpd / partArrayLen);
-        _TempReader.SetReadingTemp(sqrAvgSpd);
-        
     }
     
     /// <summary>

@@ -25,6 +25,12 @@ public class Tips : MonoBehaviour {
 		
 	}
 
+    public void SpawnAlways(int tipNum)
+    {
+        myTipsEnabled[tipNum] = false;
+        _spawn(7);
+    }
+
     #region Static Functions
     public static void Spawn(int tipNum)
     {

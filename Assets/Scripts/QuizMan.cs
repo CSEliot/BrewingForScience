@@ -151,7 +151,9 @@ public class QuizMan : MonoBehaviour {
         QuestionBox.text = quizzes[currentQuestion].Question;
 
         //If no image exists, hide the graphic
-        if (quizzes[currentQuestion].SpriteURL == null)
+        string spriteURL = null;
+        spriteURL = quizzes[currentQuestion].SpriteURL;
+        if (string.IsNullOrEmpty(spriteURL))
         {
             QuizImg.color = new Color(1f, 1f, 1f, 0f);
             QuizImgButton.SetActive(false);

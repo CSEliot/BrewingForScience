@@ -152,7 +152,7 @@ public class LidMovement : MonoBehaviour {
         }
         if (transform.localPosition.y - amt < YMin + ((float)CurrFill * MovIncrement)) {
             CurrFill--;
-            Parts.HeatChangeWaitTime -= gameCont.HeatUpVolMod;
+            Parts.VolumeChangeWaitTime -= gameCont.HeatUpVolMod;
         }
         
         transform.Translate(new Vector3(
@@ -160,6 +160,7 @@ public class LidMovement : MonoBehaviour {
             -amt,
             0f));
         if (transform.localPosition.y - amt <= YMin) {
+            gameCont.ClearCoffee();
             Parts.ClearParts();
             return true;
         }

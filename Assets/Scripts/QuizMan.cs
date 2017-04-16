@@ -128,13 +128,18 @@ public class QuizMan : MonoBehaviour {
         LOLSDK.Instance.SubmitAnswer(answer);
         if (quizzes[currentQuestion].Answers_ID[answerNum] == quizzes[currentQuestion].CorrectAnswer_ID) {
             gCont.CurrentScore++;
-            gCont.SpeechBubble.GetComponentInChildren<Text>().text = gCont.Days[gCont.CurrentDay][gCont.CurrentNPC].Thanks;
-        }else {
-            gCont.SpeechBubble.GetComponentInChildren<Text>().text = gCont.Days[gCont.CurrentDay][gCont.CurrentNPC].Anger;
         }
 
         if (currentDailyQuestions >= DailyQuestionsMax)
         {
+            if (quizzes[currentQuestion].Answers_ID[answerNum] == quizzes[currentQuestion].CorrectAnswer_ID)
+            {
+                gCont.SpeechBubble.GetComponentInChildren<Text>().text = gCont.Days[gCont.CurrentDay][gCont.CurrentNPC].Thanks;
+            }
+            else
+            {
+                gCont.SpeechBubble.GetComponentInChildren<Text>().text = gCont.Days[gCont.CurrentDay][gCont.CurrentNPC].Anger;
+            }
             quizAnim.SetTrigger("Exit");
             gCont.FrontChar.SetTrigger("WalkOut");
             gCont.QuestionAsked = false;

@@ -173,25 +173,47 @@ public class QuizMan : MonoBehaviour {
         currentQuestion++;
         currentDailyQuestions++;
         quizAnim.SetTrigger("Quiz");
-        QuestionBox.text = quizzes[currentQuestion].Question;
 
         //If no image exists, hide the graphic
+        QuizImgButton.SetActive(false);
+        QuizImg.color = new Color(1f, 1f, 1f, 0f);
+        QuizImgObject.SetActive(false);
+
         string spriteURL = null;
         spriteURL = quizzes[currentQuestion].SpriteURL;
-        QuizImgButton.SetActive(false);
-        if (string.IsNullOrEmpty(spriteURL))
+        if (!string.IsNullOrEmpty(spriteURL))
         {
-            QuizImg.color = new Color(1f, 1f, 1f, 0f);
-        }
-        else
-        {
-            QuizImgButton.SetActive(true);
             //If it DOES Exist, first set graphic to "loading"
-            QuizImg.color = new Color(1f, 1f, 1f, 0f);
-            QuizImgObject.SetActive(true);
             QuizImg.sprite = LoadingImg;
             StartCoroutine(setQuestionImage(quizzes[currentQuestion].SpriteURL));
         }
+
+        for (int x = 0; x < quizzes[currentQuestion].TotalAnswerChoices; x++)
+        { 
+            AnswerBoxes[x].text = "";
+        }
+
+        for (int x = 0; x < AnswerBoxes.Length; x++)
+        {
+                QButtons[x].SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// Called by quiz anim.
+    /// </summary>
+    public void FinishQInit()
+    {
+        QuestionBox.text = quizzes[currentQuestion].Question;
+        string spriteURL = null;
+        spriteURL = quizzes[currentQuestion].SpriteURL;
+        if (!string.IsNullOrEmpty(spriteURL))
+        {
+            QuizImgButton.SetActive(true);
+            //QuizImgObject.SetActive(true);
+            QuizImg.color = new Color(1f, 1f, 1f, 1f);
+        }
+
         for (int x = 0; x < quizzes[currentQuestion].TotalAnswerChoices; x++)
         {
             AnswerBoxes[x].text = quizzes[currentQuestion].Answers[x];
@@ -257,8 +279,8 @@ public class QuizMan : MonoBehaviour {
             www.Dispose();
             www = null;
         }
-        QuizImgObject.SetActive(false);
-        QuizImg.color = new Color(1f, 1f, 1f, 1f);
+        //QuizImgObject.SetActive(false);
+        //QuizImg.color = new Color(1f, 1f, 1f, 1f);
     }
 
     /// <summary>

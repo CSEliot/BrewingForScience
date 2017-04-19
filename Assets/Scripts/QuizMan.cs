@@ -153,6 +153,15 @@ public class QuizMan : MonoBehaviour {
         }
         else
         {
+            if (quizzes[currentQuestion].Answers_ID[answerNum] == quizzes[currentQuestion].CorrectAnswer_ID)
+            {
+                gCont.SpeechBubble.GetComponentInChildren<Text>().text = gCont.Days[gCont.CurrentDay][gCont.CurrentNPC].Thanks;
+            }
+            else
+            {
+                gCont.SpeechBubble.GetComponentInChildren<Text>().text = gCont.Days[gCont.CurrentDay][gCont.CurrentNPC].Anger;
+            }
+            quizAnim.SetTrigger("Exit");
             Init(false);
         }
     }
@@ -163,17 +172,16 @@ public class QuizMan : MonoBehaviour {
             currentQuestion = -1;
         currentQuestion++;
         currentDailyQuestions++;
-        if(firstLoad)
-            quizAnim.SetTrigger("Quiz");
+        quizAnim.SetTrigger("Quiz");
         QuestionBox.text = quizzes[currentQuestion].Question;
 
         //If no image exists, hide the graphic
         string spriteURL = null;
         spriteURL = quizzes[currentQuestion].SpriteURL;
+        QuizImgButton.SetActive(false);
         if (string.IsNullOrEmpty(spriteURL))
         {
             QuizImg.color = new Color(1f, 1f, 1f, 0f);
-            QuizImgButton.SetActive(false);
         }
         else
         {
@@ -268,7 +276,8 @@ public class QuizMan : MonoBehaviour {
             quizzes[x].TotalAnswerChoices = Random.Range(1, 4);
             quizzes[x].Answers = new string[quizzes[x].TotalAnswerChoices];
             quizzes[x].Answers_ID = new string[quizzes[x].TotalAnswerChoices];
-            quizzes[x].SpriteURL = "http://i.imgur.com/pResL3f.jpg";
+            // 50/50 chance spriteURL is either null or an image.
+            quizzes[x].SpriteURL =  Random.Range(0, 2) == 0 ? null : "http://i.imgur.com/pResL3f.jpg";
 
             for (int y = 0; y < quizzes[x].TotalAnswerChoices; y++)
             {
